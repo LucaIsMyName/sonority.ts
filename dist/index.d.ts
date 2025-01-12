@@ -1,6 +1,12 @@
 import React from 'react';
 
-declare const Sonority: any;
+interface SonorityProps {
+    variant?: "single" | "playlist" | "multiPlaylist";
+    className?: string;
+    children: React.ReactNode | any;
+    [key: string]: any;
+}
+declare const Sonority: SonorityProps | any;
 
 interface TrackProps {
     className?: string;

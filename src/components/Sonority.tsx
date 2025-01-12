@@ -9,7 +9,7 @@ import { Visualizer } from "./Visualizer";
 interface SonorityProps {
   variant?: "single" | "playlist" | "multiPlaylist";
   className?: string;
-  children: React.ReactNode;
+  children: React.ReactNode | any;
   [key: string]: any;
 }
 
@@ -24,7 +24,7 @@ const SonorityBase: React.FC<SonorityProps> = ({ variant = "single", className, 
   );
 };
 
-const Sonority: any = Object.assign(
+const Sonority: SonorityProps | any = Object.assign(
   ({ variant, className, children }: SonorityProps | any) => (
     <SonorityProvider id>
       <SonorityBase

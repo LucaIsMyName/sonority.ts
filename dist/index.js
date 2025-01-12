@@ -766,7 +766,14 @@ Track2.Cover = ({ className, imgClassName, altClassName }) => {
         }
       }
     ),
-    track.image.alt && /* @__PURE__ */ jsx("figcaption", { hidden: true, className: altClassName, children: track.image.alt })
+    track.image.alt && /* @__PURE__ */ jsx(
+      "figcaption",
+      {
+        hidden: true,
+        className: altClassName,
+        children: track.image.alt
+      }
+    )
   ] }) : null;
 };
 Track2.CustomProperty = ({ name, className, children }) => {
