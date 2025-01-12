@@ -343,7 +343,12 @@ Current.Cover = createSubcomponent(
     "img",
     {
       src: track.image.src,
-      alt: track.image.alt || "Album Cover"
+      alt: track.image.alt || "Album Cover",
+      style: {
+        width: "100%",
+        height: "100%",
+        objectFit: "cover"
+      }
     }
   ) : null
 );
@@ -481,9 +486,10 @@ Control.Seek = ({ className, children }) => {
             style: {
               width: "16px",
               height: "16px",
-              backgroundColor: "currentColor",
-              borderRadius: "50%",
-              border: "2px solid white",
+              minHeight: "16px",
+              minWidth: "16px",
+              backgroundColor: "rgba(0,0,0,0.5)",
+              border: "2px solid currentColor",
               outline: "none",
               boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
               transition: "background-color 0.2s"
@@ -551,8 +557,9 @@ Control.Volume = ({ className, children }) => {
             style: {
               width: "16px",
               height: "16px",
+              minHeight: "16px",
+              minWidth: "16px",
               backgroundColor: "currentColor",
-              borderRadius: "50%",
               border: "2px solid white",
               outline: "none",
               boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
@@ -784,7 +791,7 @@ Track2.Cover = ({ className, imgClassName, altClassName }) => {
         }
       }
     ),
-    track.image.alt && /* @__PURE__ */ jsxRuntime.jsx("figcaption", { className: altClassName, children: track.image.alt })
+    track.image.alt && /* @__PURE__ */ jsxRuntime.jsx("figcaption", { hidden: true, className: altClassName, children: track.image.alt })
   ] }) : null;
 };
 Track2.CustomProperty = ({ name, className, children }) => {

@@ -245,7 +245,7 @@ Track.Cover = ({ className, imgClassName, altClassName }) => {
           objectFit: "cover",
         }}
       />
-      {track.image.alt && <figcaption className={altClassName}>{track.image.alt}</figcaption>}
+      {track.image.alt && <figcaption hidden className={altClassName}>{track.image.alt}</figcaption>}
     </figure>
   ) : null;
 };

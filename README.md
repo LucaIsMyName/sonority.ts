@@ -1,16 +1,8 @@
 # `<Sonority />`
 
-A React Audio Player Component
+A Flexible, Headless React Audio Player Component
 
-A flexible, headless audio player component for React applications. Sonority provides a set of composable components to build custom audio players with ease.
-
-## Installation
-
-```bash
-npm install react-sonority
-# or
-yarn add react-sonority
-```
+Sonority provides a powerful, composable audio player for React applications with full TypeScript support.
 
 ## Features
 
@@ -22,27 +14,35 @@ yarn add react-sonority
 - 📱 Responsive and accessible
 - 🎯 TypeScript support
 - 🧩 Compound component architecture
-- 🎨 Fully composable track rendering
+- 🎨 Fully composable rendering
+
+## Installation
+
+```bash
+npm install react-sonority
+# or
+yarn add react-sonority
+```
 
 ## Quick Start
 
 ```jsx
 import { Sonority } from 'react-sonority';
 
-function App() {
+function AudioPlayer() {
   return (
     <Sonority variant="single" className="p-4">
       {/* Play/Pause Control */}
-      <Sonority.Control is="play">
+      <Sonority.Control.Play>
         {isPlaying ? 'Pause' : 'Play'}
-      </Sonority.Control>
+      </Sonority.Control.Play>
 
       {/* Track Information */}
-      <Sonority.Current is="track" />
-      <Sonority.Current is="artist" />
+      <Sonority.Current.Track className="text-xl" />
+      <Sonority.Current.Artist className="text-sm" />
 
       {/* Progress Bar */}
-      <Sonority.Control is="seek" />
+      <Sonority.Control.Seek className="w-full" />
 
       {/* Track Definition */}
       <Sonority.Track 
@@ -55,7 +55,7 @@ function App() {
 }
 ```
 
-## API Reference
+## Comprehensive API Reference
 
 ### `<Sonority />`
 
@@ -66,33 +66,23 @@ The root component that provides audio context and state management.
 - `className`: Additional CSS classes
 - `children`: React nodes
 
-```jsx
-<Sonority 
-  variant="single"
-  className="your-custom-classes"
->
-  {/* Child components */}
-</Sonority>
-```
-
 ### `<Sonority.Track />`
 
 Represents an audio track with extensive metadata support.
 
-#### Props
-- `id`: Unique identifier for the track
-- `src`: Path to the audio file
+#### Track Properties
+- `id`: Unique identifier
+- `src`: Audio file path
 - `title`: Track title
-- `artist`: Track artist
-- `image`: Album artwork
+- `artist?`: Artist name
+- `image?`: Album artwork
   - `src`: Image URL
-  - `alt`: Alternative text
-- `album`: Album name
-- `writtenBy`: Composer or writer
-- `genre`: Music genre
-- `year`: Release year
-- `duration`: Track length
-- `children`: Custom rendering of track information
+  - `alt?`: Alternative text
+- `album?`: Album name
+- `writtenBy?`: Composer or writer
+- `genre?`: Music genre
+- `year?`: Release year
+- `duration?`: Track length
 
 #### Subcomponents
 - `<Sonority.Track.Title>`: Render track title
@@ -105,102 +95,35 @@ Represents an audio track with extensive metadata support.
 - `<Sonority.Track.Duration>`: Render track length
 - `<Sonority.Track.CustomProperty>`: Render custom metadata
 
-```jsx
-<Sonority.Track 
-  id="unique-track-id"
-  src="/audio/track.mp3"
-  title="Cosmic Echoes"
-  artist="Stellar Waves"
-  image={{ 
-    src: "/cover.jpg", 
-    alt: "Album Artwork" 
-  }}
-  album="Interstellar Frequencies"
-  writtenBy="Alex Stardust"
-  genre="Electronic Ambient"
-  year={2022}
-  duration={245}
->
-  {/* Custom rendering */}
-  <div className="custom-track-layout">
-    <Sonority.Track.Title className="text-xl" />
-    <Sonority.Track.Artist className="text-sm" />
-    <Sonority.Track.CustomProperty 
-      name="mood" 
-      className="italic text-gray-500" 
-    />
-  </div>
-</Sonority.Track>
-```
+### `<Sonority.Current />`
+
+Displays current track information with flexible rendering.
+
+#### Subcomponents
+- `<Sonority.Current.Track>`: Current track title
+- `<Sonority.Current.Artist>`: Current track artist
+- `<Sonority.Current.Cover>`: Current track image
+- `<Sonority.Current.Album>`: Current album name
+- `<Sonority.Current.WrittenBy>`: Current track composer
+- `<Sonority.Current.Genre>`: Current track genre
+- `<Sonority.Current.Year>`: Current track release year
 
 ### `<Sonority.Control />`
 
-Audio control components with various types.
+Audio control components with various interactions.
 
-#### Supported Control Types
-- `"play"`: Play/Pause toggle
-- `"pause"`: Pause playback
-- `"next"`: Next track
-- `"previous"`: Previous track
-- `"seek"`: Progress/seek slider
-- `"volume"`: Volume control
-- `"shuffle"`: Toggle shuffle mode
-- `"repeat"`: Toggle repeat modes
-
-```jsx
-{/* Play/Pause Button */}
-<Sonority.Control is="play">
-  {isPlaying ? <PauseIcon /> : <PlayIcon />}
-</Sonority.Control>
-
-{/* Seek Bar */}
-<Sonority.Control is="seek" className="w-full" />
-
-{/* Volume Control */}
-<Sonority.Control is="volume" className="w-24" />
-```
-
-### `<Sonority.Current />`
-
-Displays current track information.
-
-#### Supported Types
-- `"track"`: Current track title
-- `"artist"`: Current track artist
-- `"cover"`: Current track image
-- `"album"`: Current album name
-- `"writtenBy"`: Current track composer
-- Custom metadata types
-
-```jsx
-<Sonority.Current is="track" className="text-xl" />
-<Sonority.Current is="artist" className="text-sm" />
-```
-
-### `<Sonority.Playlist />`
-
-Groups tracks into a playlist.
-
-#### Props
-- `id`: Unique playlist identifier
-- `name`: Playlist name
-- `className`: Additional CSS classes
-- `children`: `<Sonority.Track />` components
-
-```jsx
-<Sonority.Playlist 
-  id="my-playlist"
-  name="Chill Vibes"
-  className="space-y-2"
->
-  <Sonority.Track {...track1} />
-  <Sonority.Track {...track2} />
-</Sonority.Playlist>
-```
+#### Subcomponents
+- `<Sonority.Control.Play>`: Play/Pause toggle
+- `<Sonority.Control.Previous>`: Previous track
+- `<Sonority.Control.Next>`: Next track
+- `<Sonority.Control.Seek>`: Progress slider
+- `<Sonority.Control.Volume>`: Volume control
+- `<Sonority.Control.Shuffle>`: Toggle shuffle mode
+- `<Sonority.Control.Repeat>`: Toggle repeat modes
 
 ## Advanced Usage Examples
 
-### Detailed Track Rendering
+### Flexible Track Rendering
 
 ```jsx
 <Sonority.Track {...trackData}>
@@ -209,7 +132,6 @@ Groups tracks into a playlist.
     <div>
       <Sonority.Track.Title className="font-bold" />
       <Sonority.Track.Artist className="text-gray-600" />
-      <Sonority.Track.Album className="text-sm" />
       <Sonority.Track.CustomProperty 
         name="mood" 
         className="italic text-gray-500" 
@@ -219,7 +141,7 @@ Groups tracks into a playlist.
 </Sonority.Track>
 ```
 
-### Playlist with Custom Styling
+### Custom Playlist with Subcomponents
 
 ```jsx
 <Sonority variant="playlist">
@@ -244,9 +166,9 @@ Groups tracks into a playlist.
 
 Sonority is completely headless with no default styles. Use `className` props or CSS-in-JS solutions for styling.
 
-### Data Attributes for Styling
+### Data Attributes
 - `data-sonority-component`: Component type
-- `data-sonority-component-is`: Component variant
+- `data-sonority-variant`: Component variant
 - `data-sonority-current`: Current track
 - `data-sonority-playing`: Playback state
 
@@ -264,7 +186,7 @@ Full TypeScript type definitions included.
 
 ## License
 
-MIT © `LucaIsMyName`
+MIT © Lucas Mack
 
 ---
 

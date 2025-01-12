@@ -81,6 +81,11 @@ Current.Cover = createSubcomponent("image", (track) =>
     <img
       src={track.image.src}
       alt={track.image.alt || "Album Cover"}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+      }}
     />
   ) : null
 );
