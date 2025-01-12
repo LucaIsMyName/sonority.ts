@@ -1,5 +1,5 @@
-import React2, { createContext, useReducer, useRef, useEffect, useContext } from 'react';
-import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import React5, { createContext, useReducer, useRef, useEffect, useContext } from 'react';
+import { jsx, jsxs } from 'react/jsx-runtime';
 import * as Slider from '@radix-ui/react-slider';
 
 // src/context/SonorityContext.tsx
@@ -47,6 +47,7 @@ var initialState = {
 };
 var SonorityContext = createContext(null);
 var sonorityReducer = (state, action) => {
+  var _a;
   switch (action.type) {
     case "SET_TRACK": {
       return {
@@ -56,6 +57,27 @@ var sonorityReducer = (state, action) => {
         // Don't change isPlaying state here
       };
     }
+    case "TOGGLE_SHUFFLE":
+      return {
+        ...state,
+        isShuffled: !state.isShuffled,
+        queue: state.isShuffled ? [...state.queue].sort(() => Math.random() - 0.5) : ((_a = state.currentPlaylist) == null ? void 0 : _a.tracks) || state.queue
+        // Restore original order
+      };
+    case "TOGGLE_REPEAT":
+      return {
+        ...state,
+        isRepeating: !state.isRepeating,
+        isRepeatingOne: false
+        // Disable repeat one when toggling repeat
+      };
+    case "TOGGLE_REPEAT_ONE":
+      return {
+        ...state,
+        isRepeatingOne: !state.isRepeatingOne,
+        isRepeating: false
+        // Disable repeat all when toggling repeat one
+      };
     case "SET_PLAYLIST":
       return {
         ...state,
@@ -77,8 +99,8 @@ var sonorityReducer = (state, action) => {
       return { ...state, queue: action.payload };
     case "NEXT_TRACK": {
       const currentIndex = state.queue.findIndex((track) => {
-        var _a;
-        return track.id === ((_a = state.currentTrack) == null ? void 0 : _a.id);
+        var _a2;
+        return track.id === ((_a2 = state.currentTrack) == null ? void 0 : _a2.id);
       });
       const nextIndex = currentIndex + 1 >= state.queue.length ? 0 : currentIndex + 1;
       return {
@@ -91,8 +113,8 @@ var sonorityReducer = (state, action) => {
     }
     case "PREVIOUS_TRACK": {
       const currentIndex = state.queue.findIndex((track) => {
-        var _a;
-        return track.id === ((_a = state.currentTrack) == null ? void 0 : _a.id);
+        var _a2;
+        return track.id === ((_a2 = state.currentTrack) == null ? void 0 : _a2.id);
       });
       const prevIndex = currentIndex <= 0 ? state.queue.length - 1 : currentIndex - 1;
       return {
@@ -170,7 +192,17 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
       if (state.isRepeatingOne) {
         audio.currentTime = 0;
         audio.play().catch(console.warn);
-      } else if (state.isRepeating || state.queue.length > 0) {
+      } else if (state.isRepeating) {
+        const currentIndex = state.queue.findIndex((track) => {
+          var _a2;
+          return track.id === ((_a2 = state.currentTrack) == null ? void 0 : _a2.id);
+        });
+        const nextIndex = (currentIndex + 1) % state.queue.length;
+        dispatch({
+          type: "SET_TRACK",
+          payload: state.queue[nextIndex]
+        });
+      } else if (state.queue.length > 0) {
         dispatch({ type: "NEXT_TRACK" });
       } else {
         dispatch({ type: "PAUSE" });
@@ -249,57 +281,82 @@ var useSonority = () => {
   }
   return context;
 };
-var CoverComponent = ({ className }) => {
-  var _a;
+var CurrentContext = createContext(null);
+var CurrentContextProvider = ({ children, className }) => {
   const { state } = useSonority();
-  return ((_a = state.currentTrack) == null ? void 0 : _a.image) ? /* @__PURE__ */ jsx(
+  const contextValue = {
+    currentTrack: state.currentTrack
+  };
+  return /* @__PURE__ */ jsx(CurrentContext.Provider, { value: contextValue, children: /* @__PURE__ */ jsx("div", { className, children }) });
+};
+var Current = Object.assign(({ children, className }) => /* @__PURE__ */ jsx(CurrentContextProvider, { className, children: children || /* @__PURE__ */ jsx(Current.Track, {}) }), {
+  Provider: CurrentContextProvider
+});
+var useCurrentContext = () => {
+  const context = useContext(CurrentContext);
+  if (!context) {
+    const { state } = useSonority();
+    return { currentTrack: state.currentTrack };
+  }
+  return context;
+};
+var createSubcomponent = (propName, defaultRenderer) => {
+  return ({ className, children }) => {
+    const { currentTrack } = useCurrentContext();
+    if (children)
+      return /* @__PURE__ */ jsx("div", { className, children });
+    if (defaultRenderer && currentTrack) {
+      const renderedContent = defaultRenderer(currentTrack);
+      return renderedContent ? /* @__PURE__ */ jsx("div", { className, children: renderedContent }) : null;
+    }
+    return currentTrack && currentTrack[propName] ? /* @__PURE__ */ jsx("div", { className, children: currentTrack[propName] }) : null;
+  };
+};
+Current.Cover = createSubcomponent(
+  "image",
+  (track) => track.image ? /* @__PURE__ */ jsx(
     "img",
     {
-      src: state.currentTrack.image.src,
-      alt: state.currentTrack.image.alt,
-      className
+      src: track.image.src,
+      alt: track.image.alt || "Album Cover"
     }
-  ) : null;
-};
-var TrackComponent = ({ className, children }) => {
-  var _a;
-  const { state } = useSonority();
-  return /* @__PURE__ */ jsx("div", { className, children: children || ((_a = state.currentTrack) == null ? void 0 : _a.title) });
-};
-var ArtistComponent = ({ className, children }) => {
-  var _a;
-  const { state } = useSonority();
-  return /* @__PURE__ */ jsx("div", { className, children: children || ((_a = state.currentTrack) == null ? void 0 : _a.artist) });
-};
-var Current = Object.assign(
-  ({ is = "track", className, children }) => {
-    var _a, _b, _c;
-    const { state } = useSonority();
-    switch (is) {
-      case "cover":
-        return /* @__PURE__ */ jsx(CoverComponent, { className });
-      case "track":
-        return /* @__PURE__ */ jsx(TrackComponent, { className, children });
-      case "artist":
-        return /* @__PURE__ */ jsx(ArtistComponent, { className, children });
-      case "album":
-        return /* @__PURE__ */ jsx("div", { className, children: children || ((_a = state.currentTrack) == null ? void 0 : _a.album) });
-      case "writtenBy":
-        return /* @__PURE__ */ jsx("div", { className, children: children || ((_b = state.currentTrack) == null ? void 0 : _b.writtenBy) });
-      case "copyright":
-        return /* @__PURE__ */ jsx("div", { className, children: children || ((_c = state.currentTrack) == null ? void 0 : _c.copyright) });
-      default:
-        return /* @__PURE__ */ jsx("div", { className, children });
-    }
-  },
-  {
-    Cover: CoverComponent,
-    Track: TrackComponent,
-    Artist: ArtistComponent
-  }
+  ) : null
 );
-var Control = ({ className, children, is }) => {
+Current.Track = createSubcomponent("title");
+Current.Artist = createSubcomponent("artist");
+Current.Album = createSubcomponent("album");
+Current.WrittenBy = createSubcomponent("writtenBy");
+Current.Copyright = createSubcomponent("copyright");
+var ControlContext = createContext(null);
+var ControlContextProvider = ({ children, className }) => {
   const { state, dispatch, audioControls } = useSonority();
+  const contextValue = {
+    state,
+    dispatch,
+    audioControls
+  };
+  return /* @__PURE__ */ jsx(ControlContext.Provider, { value: contextValue, children: /* @__PURE__ */ jsx(
+    "div",
+    {
+      "data-sonority-component": "control",
+      className,
+      children
+    }
+  ) });
+};
+var Control = Object.assign(({ children, className }) => /* @__PURE__ */ jsx(ControlContextProvider, { className, children }), {
+  Provider: ControlContextProvider
+});
+var useControlContext = () => {
+  const context = useContext(ControlContext);
+  if (!context) {
+    const { state, dispatch, audioControls } = useSonority();
+    return { state, dispatch, audioControls };
+  }
+  return context;
+};
+Control.Play = ({ className, children }) => {
+  const { state, dispatch } = useControlContext();
   const handlePlayPause = () => {
     if (!state.currentTrack && state.queue.length > 0) {
       dispatch({
@@ -309,255 +366,412 @@ var Control = ({ className, children, is }) => {
     }
     dispatch({ type: state.isPlaying ? "PAUSE" : "PLAY" });
   };
-  const getControlContent = () => {
-    switch (is) {
-      case "play":
-      case "pause":
-        return /* @__PURE__ */ jsx(
-          "button",
-          {
-            onClick: handlePlayPause,
-            className,
-            children
-          }
-        );
-      case "next":
-        return /* @__PURE__ */ jsx(
-          "button",
-          {
-            onClick: () => dispatch({ type: "NEXT_TRACK" }),
-            className,
-            disabled: state.queue.length <= 1,
-            children
-          }
-        );
-      case "previous":
-        return /* @__PURE__ */ jsx(
-          "button",
-          {
-            onClick: () => dispatch({ type: "PREVIOUS_TRACK" }),
-            className,
-            disabled: state.queue.length <= 1,
-            children
-          }
-        );
-      case "seek":
-        return /* @__PURE__ */ jsxs(
-          Slider.Root,
-          {
-            style: {
-              width: "100%",
-              height: "3px",
-              position: "relative",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              touchAction: "none",
-              userSelect: "none",
-              ...typeof className === "string" ? parseStyleString(className) : {}
-            },
-            value: [state.currentTime],
-            onValueChange: (value) => {
-              if ((audioControls == null ? void 0 : audioControls.seek) && value.length > 0) {
-                audioControls.seek(value[0]);
-                dispatch({ type: "SET_TIME", payload: value[0] });
-              }
-            },
-            max: state.duration || 0,
-            step: 0.1,
-            children: [
-              /* @__PURE__ */ jsx(
-                Slider.Track,
-                {
-                  style: {
-                    position: "relative",
-                    flexGrow: 1,
-                    height: "3px",
-                    backgroundColor: "#d1d5db",
-                    // gray-300
-                    borderRadius: "9999px"
-                  },
-                  children: /* @__PURE__ */ jsx(
-                    Slider.Range,
-                    {
-                      style: {
-                        position: "absolute",
-                        height: "100%",
-                        backgroundColor: "#2563eb",
-                        // blue-500
-                        borderRadius: "9999px",
-                        left: 0,
-                        right: 0
-                      }
-                    }
-                  )
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                Slider.Thumb,
-                {
-                  style: {
-                    width: "12px",
-                    height: "12px",
-                    backgroundColor: "#2563eb",
-                    // blue-500
-                    borderRadius: "50%",
-                    border: "none",
-                    outline: "none",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                    transition: "background-color 0.2s"
-                  },
-                  "aria-label": "Seek"
-                }
-              )
-            ]
-          }
-        );
-      case "volume":
-        return /* @__PURE__ */ jsxs(
-          Slider.Root,
-          {
-            style: {
-              width: "100%",
-              height: "3px",
-              position: "relative",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              touchAction: "none",
-              userSelect: "none",
-              ...typeof className === "string" ? parseStyleString(className) : {}
-            },
-            value: [state.volume],
-            max: 1,
-            step: 0.01,
-            onValueChange: (value) => {
-              if (value.length > 0) {
-                dispatch({ type: "SET_VOLUME", payload: value[0] });
-                audioControls.setVolume(value[0]);
-              }
-            },
-            children: [
-              /* @__PURE__ */ jsx(
-                Slider.Track,
-                {
-                  style: {
-                    position: "relative",
-                    flexGrow: 1,
-                    height: "3px",
-                    backgroundColor: "#e5e7eb",
-                    // gray-200
-                    borderRadius: "9999px"
-                  },
-                  children: /* @__PURE__ */ jsx(
-                    Slider.Range,
-                    {
-                      style: {
-                        position: "absolute",
-                        height: "100%",
-                        backgroundColor: "#2563eb",
-                        // blue-500
-                        borderRadius: "9999px",
-                        left: 0,
-                        right: 0
-                      }
-                    }
-                  )
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                Slider.Thumb,
-                {
-                  style: {
-                    width: "10px",
-                    height: "10px",
-                    backgroundColor: "#2563eb",
-                    // blue-500
-                    borderRadius: "50%",
-                    border: "none",
-                    outline: "none",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                    transition: "background-color 0.2s"
-                  },
-                  "aria-label": "Volume"
-                }
-              )
-            ]
-          }
-        );
-      case "repeat":
-        return /* @__PURE__ */ jsx(
-          "button",
-          {
-            onClick: () => dispatch({ type: "TOGGLE_REPEAT" }),
-            className,
-            children
-          }
-        );
-      default:
-        return children;
-    }
-  };
-  return /* @__PURE__ */ jsx(
-    "div",
-    {
-      "data-sonority-component": "control",
-      "data-sonority-component-is": is,
-      children: getControlContent()
-    }
-  );
-};
-function parseStyleString(className) {
-  var _a, _b;
-  const styles = {};
-  const widthMap = {
-    "w-full": "100%",
-    "w-1/2": "50%",
-    "w-1/4": "25%"
-    // Add more as needed
-  };
-  const heightMap = {
-    "h-full": "100%",
-    "h-1": "0.25rem",
-    "h-2": "0.5rem",
-    "h-3": "0.75rem"
-    // Add more as needed
-  };
-  const widthClass = (_a = className.match(/w-[^\s]+/)) == null ? void 0 : _a[0];
-  if (widthClass)
-    styles.width = widthMap[widthClass] || widthClass.replace("w-", "");
-  const heightClass = (_b = className.match(/h-[^\s]+/)) == null ? void 0 : _b[0];
-  if (heightClass)
-    styles.height = heightMap[heightClass] || heightClass.replace("h-", "");
-  return styles;
-}
-var Track2 = ({ className, title, artist, image, src, id, onClick, children, ...props }) => {
-  var _a;
-  const { dispatch, state } = useSonority();
-  const isCurrentTrack = ((_a = state.currentTrack) == null ? void 0 : _a.id) === id;
   return /* @__PURE__ */ jsx(
     "button",
     {
-      "data-sonority-component": "track",
-      "data-sonority-current": isCurrentTrack,
+      onClick: handlePlayPause,
       className,
-      onClick,
-      children: children || /* @__PURE__ */ jsxs(Fragment, { children: [
-        image && /* @__PURE__ */ jsx(
-          "img",
-          {
-            src: image.src,
-            alt: image.alt || title,
-            className: "w-full h-auto"
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { children: [
-          /* @__PURE__ */ jsx("h3", { children: title }),
-          artist && /* @__PURE__ */ jsx("p", { children: artist })
-        ] })
-      ] })
+      children: children || (state.isPlaying ? "Pause" : "Play")
     }
   );
+};
+Control.Previous = ({ className, children }) => {
+  const { state, dispatch } = useControlContext();
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      onClick: () => dispatch({ type: "PREVIOUS_TRACK" }),
+      className,
+      disabled: state.queue.length <= 1,
+      children: children || "Previous"
+    }
+  );
+};
+Control.Next = ({ className, children }) => {
+  const { state, dispatch } = useControlContext();
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      onClick: () => dispatch({ type: "NEXT_TRACK" }),
+      className,
+      "data-sonority-next": state.queue.length <= 1,
+      disabled: state.queue.length <= 1,
+      children: children || "Next"
+    }
+  );
+};
+Control.Seek = ({ className, children }) => {
+  const { state, dispatch, audioControls } = useControlContext();
+  return /* @__PURE__ */ jsxs(
+    Slider.Root,
+    {
+      style: {
+        width: "100%",
+        height: "10px",
+        position: "relative",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        touchAction: "none",
+        userSelect: "none"
+      },
+      value: [state.currentTime],
+      onValueChange: (value) => {
+        if ((audioControls == null ? void 0 : audioControls.seek) && value.length > 0) {
+          audioControls.seek(value[0]);
+          dispatch({ type: "SET_TIME", payload: value[0] });
+        }
+      },
+      max: state.duration || 0,
+      step: 0.1,
+      children: [
+        /* @__PURE__ */ jsx(
+          Slider.Track,
+          {
+            style: {
+              position: "relative",
+              flexGrow: 1,
+              height: "4px",
+              backgroundColor: "currentColor",
+              borderRadius: "9999px"
+            },
+            children: /* @__PURE__ */ jsx(
+              Slider.Range,
+              {
+                style: {
+                  position: "absolute",
+                  height: "100%",
+                  backgroundColor: "currentColor",
+                  borderRadius: "9999px",
+                  left: 0,
+                  right: 0
+                }
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Slider.Thumb,
+          {
+            style: {
+              width: "16px",
+              height: "16px",
+              backgroundColor: "currentColor",
+              borderRadius: "50%",
+              border: "2px solid white",
+              outline: "none",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              transition: "background-color 0.2s"
+            },
+            "aria-label": "Seek"
+          }
+        )
+      ]
+    }
+  );
+};
+Control.Volume = ({ className, children }) => {
+  const { state, dispatch, audioControls } = useControlContext();
+  return /* @__PURE__ */ jsxs(
+    Slider.Root,
+    {
+      style: {
+        width: "100%",
+        height: "10px",
+        position: "relative",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        touchAction: "none",
+        userSelect: "none"
+      },
+      value: [state.volume],
+      max: 1,
+      step: 0.01,
+      onValueChange: (value) => {
+        if (value.length > 0) {
+          dispatch({ type: "SET_VOLUME", payload: value[0] });
+          audioControls.setVolume(value[0]);
+        }
+      },
+      children: [
+        /* @__PURE__ */ jsx(
+          Slider.Track,
+          {
+            style: {
+              position: "relative",
+              flexGrow: 1,
+              height: "4px",
+              backgroundColor: "currentColor",
+              borderRadius: "9999px"
+            },
+            children: /* @__PURE__ */ jsx(
+              Slider.Range,
+              {
+                style: {
+                  position: "absolute",
+                  height: "100%",
+                  backgroundColor: "currentColor",
+                  borderRadius: "9999px",
+                  left: 0,
+                  right: 0
+                }
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Slider.Thumb,
+          {
+            style: {
+              width: "16px",
+              height: "16px",
+              backgroundColor: "currentColor",
+              borderRadius: "50%",
+              border: "2px solid white",
+              outline: "none",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              transition: "background-color 0.2s"
+            },
+            "aria-label": "Volume"
+          }
+        )
+      ]
+    }
+  );
+};
+Control.Shuffle = ({ className, children }) => {
+  const { state, dispatch } = useControlContext();
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      onClick: () => dispatch({ type: "TOGGLE_SHUFFLE" }),
+      className,
+      children: children || "Shuffle"
+    }
+  );
+};
+Control.Repeat = ({ className, children }) => {
+  const { state, dispatch } = useControlContext();
+  const handleRepeat = () => {
+    if (!state.isRepeating && !state.isRepeatingOne) {
+      dispatch({ type: "TOGGLE_REPEAT" });
+    } else if (state.isRepeating) {
+      dispatch({ type: "TOGGLE_REPEAT" });
+      dispatch({ type: "TOGGLE_REPEAT_ONE" });
+    } else if (state.isRepeatingOne) {
+      dispatch({ type: "TOGGLE_REPEAT_ONE" });
+    }
+  };
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      onClick: handleRepeat,
+      className,
+      children: children || "Repeat"
+    }
+  );
+};
+var TrackContext = createContext(null);
+var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onClick, children, coverWidth = 32, coverClassName = "", genre, year, duration, ...props }) => {
+  var _a;
+  const { dispatch, state } = useSonority();
+  const isCurrentTrack = ((_a = state.currentTrack) == null ? void 0 : _a.id) === id;
+  const handleTrackClick = () => {
+    dispatch({
+      type: "SET_TRACK",
+      payload: {
+        id,
+        title,
+        artist,
+        writtenBy,
+        album,
+        image,
+        src,
+        genre,
+        year,
+        duration,
+        ...props
+      }
+    });
+    onClick == null ? void 0 : onClick();
+  };
+  if (React5.Children.count(children) > 0) {
+    return /* @__PURE__ */ jsx(
+      TrackContext.Provider,
+      {
+        value: {
+          title,
+          artist,
+          writtenBy,
+          album,
+          image,
+          src,
+          id,
+          genre,
+          year,
+          duration,
+          ...props
+        },
+        children: /* @__PURE__ */ jsx(
+          "button",
+          {
+            "data-sonority-component": "track",
+            "data-sonority-current": isCurrentTrack,
+            className,
+            onClick: handleTrackClick,
+            children
+          }
+        )
+      }
+    );
+  }
+  return /* @__PURE__ */ jsx(
+    TrackContext.Provider,
+    {
+      value: {
+        title,
+        artist,
+        writtenBy,
+        album,
+        image,
+        src,
+        id,
+        genre,
+        year,
+        duration,
+        ...props
+      },
+      children: /* @__PURE__ */ jsxs(
+        "button",
+        {
+          "data-sonority-component": "track",
+          "data-sonority-current": isCurrentTrack,
+          className,
+          onClick: handleTrackClick,
+          children: [
+            /* @__PURE__ */ jsx(Track2.Cover, {}),
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx(Track2.Title, {}),
+              /* @__PURE__ */ jsx(Track2.Artist, {}),
+              writtenBy && /* @__PURE__ */ jsx(Track2.WrittenBy, {}),
+              album && /* @__PURE__ */ jsx(Track2.Album, {})
+            ] })
+          ]
+        }
+      )
+    }
+  );
+};
+var useTrackContext = () => {
+  const context = useContext(TrackContext);
+  if (!context) {
+    throw new Error("Track components must be rendered inside a Track component");
+  }
+  return context;
+};
+var formatDuration = (duration) => {
+  if (!duration)
+    return "";
+  const minutes = Math.floor(duration / 60);
+  const seconds = Math.floor(duration % 60);
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+};
+Track2.Title = ({ className, children }) => {
+  const track = useTrackContext();
+  if (children)
+    return /* @__PURE__ */ jsx("p", { className, children });
+  return /* @__PURE__ */ jsx(
+    "p",
+    {
+      className,
+      style: { textAlign: "start" },
+      children: track.title
+    }
+  );
+};
+Track2.Artist = ({ className, children }) => {
+  const track = useTrackContext();
+  if (children)
+    return /* @__PURE__ */ jsx("p", { className, children });
+  return track.artist ? /* @__PURE__ */ jsx("p", { className, children: track.artist }) : null;
+};
+Track2.WrittenBy = ({ className, children }) => {
+  const track = useTrackContext();
+  if (children)
+    return /* @__PURE__ */ jsx("p", { className, children });
+  return track.writtenBy ? /* @__PURE__ */ jsxs("p", { className, children: [
+    "Written by: ",
+    track.writtenBy
+  ] }) : null;
+};
+Track2.Album = ({ className, children }) => {
+  const track = useTrackContext();
+  if (children)
+    return /* @__PURE__ */ jsx("p", { className, children });
+  return track.album ? /* @__PURE__ */ jsxs("p", { className, children: [
+    "Album: ",
+    track.album
+  ] }) : null;
+};
+Track2.Genre = ({ className, children }) => {
+  const track = useTrackContext();
+  if (children)
+    return /* @__PURE__ */ jsx("p", { className, children });
+  return track.genre ? /* @__PURE__ */ jsxs("p", { className, children: [
+    "Genre: ",
+    track.genre
+  ] }) : null;
+};
+Track2.Year = ({ className, children }) => {
+  const track = useTrackContext();
+  if (children)
+    return /* @__PURE__ */ jsx("p", { className, children });
+  return track.year ? /* @__PURE__ */ jsxs("p", { className, children: [
+    "Year: ",
+    track.year
+  ] }) : null;
+};
+Track2.Duration = ({ className, children }) => {
+  const track = useTrackContext();
+  if (children)
+    return /* @__PURE__ */ jsx("p", { className, children });
+  return track.duration ? /* @__PURE__ */ jsxs("p", { className, children: [
+    "Duration: ",
+    formatDuration(track.duration)
+  ] }) : null;
+};
+Track2.Cover = ({ className, imgClassName, altClassName }) => {
+  const track = useTrackContext();
+  return track.image ? /* @__PURE__ */ jsxs("figure", { className, children: [
+    /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: track.image.src,
+        alt: track.image.alt || track.title,
+        className: imgClassName,
+        style: {
+          minWidth: "100%",
+          minHeight: "100%",
+          width: "100%",
+          height: "100%",
+          objectFit: "cover"
+        }
+      }
+    ),
+    track.image.alt && /* @__PURE__ */ jsx("figcaption", { className: altClassName, children: track.image.alt })
+  ] }) : null;
+};
+Track2.CustomProperty = ({ name, className, children }) => {
+  const track = useTrackContext();
+  const propertyValue = track[name];
+  if (children)
+    return /* @__PURE__ */ jsx("p", { className, children });
+  return propertyValue ? /* @__PURE__ */ jsxs("p", { className, children: [
+    name,
+    ": ",
+    propertyValue.toString()
+  ] }) : null;
 };
 var Playlist = ({
   name,
@@ -567,8 +781,8 @@ var Playlist = ({
 }) => {
   const { dispatch, state } = useSonority();
   useEffect(() => {
-    const trackElements = React2.Children.toArray(children).filter(
-      (child) => React2.isValidElement(child) && child.type === Track2
+    const trackElements = React5.Children.toArray(children).filter(
+      (child) => React5.isValidElement(child) && child.type === Track2
     );
     const extractedTracks = trackElements.map((track) => ({
       ...track.props,
@@ -602,9 +816,9 @@ var Playlist = ({
       "data-sonority-playlist-id": id,
       "data-sonority-playlist-name": name,
       className,
-      children: React2.Children.map(children, (child) => {
-        if (React2.isValidElement(child) && child.type === Track2) {
-          return React2.cloneElement(child, {
+      children: React5.Children.map(children, (child) => {
+        if (React5.isValidElement(child) && child.type === Track2) {
+          return React5.cloneElement(child, {
             ...child.props,
             onClick: () => handleTrackSelect(child.props)
           });

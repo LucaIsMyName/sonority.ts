@@ -5,59 +5,53 @@ import * as Slider from "@radix-ui/react-slider";
 
 export interface ControlContextType {
   state: any;
-  dispatch: (action: { type: string; payload?: any }) => void;
+  dispatch: any;
   audioControls: any;
 }
 
 const ControlContext = createContext<ControlContextType | null>(null);
 
 // Default context provider that allows subcomponents to be used independently
-const ControlContextProvider: React.FC<{ 
-  children: React.ReactNode; 
-  className?: string; 
+const ControlContextProvider: React.FC<{
+  children: React.ReactNode;
+  className?: string;
 }> = ({ children, className }) => {
   const { state, dispatch, audioControls } = useSonority();
 
   const contextValue: ControlContextType = {
     state,
     dispatch,
-    audioControls
+    audioControls,
   };
 
   return (
     <ControlContext.Provider value={contextValue}>
-      <div 
+      <div
         data-sonority-component="control"
-        className={className}
-      >
+        className={className}>
         {children}
       </div>
     </ControlContext.Provider>
   );
 };
 
-export const Control: React.FC<{ 
-  children?: React.ReactNode; 
-  className?: string; 
-}> & {
-  Play: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Pause: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Previous: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Next: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Seek: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Volume: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Shuffle: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Repeat: React.FC<{ className?: string; children?: React.ReactNode }>;
-} = Object.assign(
-  ({ children, className }) => (
-    <ControlContextProvider className={className}>
-      {children}
-    </ControlContextProvider>
-  ),
-  {
-    Provider: ControlContextProvider,
-  }
-);
+export const Control:
+  | any
+  | (React.FC<{
+      children?: React.ReactNode;
+      className?: string;
+    }> & {
+      Play: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Pause: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Previous: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Next: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Seek: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Volume: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Shuffle: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Repeat: React.FC<{ className?: string; children?: React.ReactNode }>;
+    }) = Object.assign(({ children, className }: { children?: React.ReactNode; className?: string }) => <ControlContextProvider className={className}>{children}</ControlContextProvider>, {
+  Provider: ControlContextProvider,
+});
 
 // Utility hook to access control context
 const useControlContext = () => {
@@ -71,9 +65,15 @@ const useControlContext = () => {
 };
 
 // Subcomponent for Play/Pause
-Control.Play = ({ className, children }) => {
+
+interface PlayProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
+Control.Play = ({ className, children }: PlayProps) => {
   const { state, dispatch } = useControlContext();
-  
+
   const handlePlayPause = () => {
     if (!state.currentTrack && state.queue.length > 0) {
       dispatch({
@@ -83,48 +83,64 @@ Control.Play = ({ className, children }) => {
     }
     dispatch({ type: state.isPlaying ? "PAUSE" : "PLAY" });
   };
-  
+
   return (
     <button
       onClick={handlePlayPause}
       className={className}>
-      {children || (state.isPlaying ? 'Pause' : 'Play')}
+      {children || (state.isPlaying ? "Pause" : "Play")}
     </button>
   );
 };
 
+interface PreviousProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
 // Subcomponent for Previous Track
-Control.Previous = ({ className, children }) => {
+Control.Previous = ({ className, children }: PreviousProps) => {
   const { state, dispatch } = useControlContext();
-  
+
   return (
     <button
       onClick={() => dispatch({ type: "PREVIOUS_TRACK" })}
       className={className}
       disabled={state.queue.length <= 1}>
-      {children || 'Previous'}
+      {children || "Previous"}
     </button>
   );
 };
 
+interface NextProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
 // Subcomponent for Next Track
-Control.Next = ({ className, children }) => {
+Control.Next = ({ className, children }: NextProps) => {
   const { state, dispatch } = useControlContext();
-  
+
   return (
     <button
       onClick={() => dispatch({ type: "NEXT_TRACK" })}
       className={className}
+      data-sonority-next={state.queue.length <= 1}
       disabled={state.queue.length <= 1}>
-      {children || 'Next'}
+      {children || "Next"}
     </button>
   );
 };
 
+interface SeekProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
 // Subcomponent for Seek
-Control.Seek = ({ className, children }) => {
+Control.Seek = ({ className, children }: SeekProps) => {
   const { state, dispatch, audioControls } = useControlContext();
-  
+
   return (
     <Slider.Root
       style={{
@@ -182,10 +198,15 @@ Control.Seek = ({ className, children }) => {
   );
 };
 
+interface VolumeProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
 // Subcomponent for Volume
-Control.Volume = ({ className, children }) => {
+Control.Volume = ({ className, children }: VolumeProps) => {
   const { state, dispatch, audioControls } = useControlContext();
-  
+
   return (
     <Slider.Root
       style={{
@@ -243,23 +264,33 @@ Control.Volume = ({ className, children }) => {
   );
 };
 
+interface ShuffleProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
 // Subcomponent for Shuffle
-Control.Shuffle = ({ className, children }) => {
+Control.Shuffle = ({ className, children }: ShuffleProps) => {
   const { state, dispatch } = useControlContext();
-  
+
   return (
     <button
       onClick={() => dispatch({ type: "TOGGLE_SHUFFLE" })}
       className={className}>
-      {children || 'Shuffle'}
+      {children || "Shuffle"}
     </button>
   );
 };
 
+interface RepeatProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
 // Subcomponent for Repeat
-Control.Repeat = ({ className, children }) => {
+Control.Repeat = ({ className, children }: RepeatProps) => {
   const { state, dispatch } = useControlContext();
-  
+
   const handleRepeat = () => {
     // Cycle through repeat modes
     if (!state.isRepeating && !state.isRepeatingOne) {
@@ -271,12 +302,12 @@ Control.Repeat = ({ className, children }) => {
       dispatch({ type: "TOGGLE_REPEAT_ONE" });
     }
   };
-  
+
   return (
     <button
       onClick={handleRepeat}
       className={className}>
-      {children || 'Repeat'}
+      {children || "Repeat"}
     </button>
   );
 };

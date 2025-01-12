@@ -17,6 +17,8 @@ export interface TrackProps {
   isDownloadActive?: boolean;
   image?: ImageProps;
   album?: string;  // Add this line
+  [key: string]: any;  // Allow additional properties
+
 }
 
 export interface PlaylistProps {

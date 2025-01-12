@@ -5,6 +5,8 @@ interface TrackProps {
     className?: string;
     title: string;
     artist?: string;
+    writtenBy?: string;
+    album?: string;
     image?: {
         src: string;
         alt?: string;
@@ -12,13 +14,54 @@ interface TrackProps {
     src: string;
     id: string;
     onClick?: () => void;
-}
-interface TrackComponentProps extends TrackProps {
-    className?: string;
     children?: React.ReactNode;
-    onClick?: () => void;
+    coverWidth?: number;
+    coverClassName?: string;
+    genre?: string;
+    year?: number;
+    duration?: number;
+    [key: string]: any;
 }
-declare const Track: React.FC<TrackComponentProps>;
+declare const Track: React.FC<TrackProps> & {
+    Title: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Artist: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    WrittenBy: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Album: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Cover: React.FC<{
+        className?: string;
+        imgClassName?: string;
+        altClassName?: string;
+    }>;
+    Genre: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Year: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Duration: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    CustomProperty: React.FC<{
+        name: string;
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+};
 
 interface PlaylistProps {
     name: string;
@@ -28,46 +71,17 @@ interface PlaylistProps {
 }
 declare const Playlist: React.FC<PlaylistProps>;
 
-interface ControlProps {
-    is: "play" | "pause" | "stop" | "next" | "previous" | "shuffle" | "repeat" | "volume" | "seek";
-    className?: string;
-    children?: React.ReactNode;
-}
-declare const Control: React.FC<ControlProps>;
-
-interface CurrentProps {
-    className?: string;
-    children?: React.ReactNode;
-    is?: "cover" | "track" | "playlist" | "artist" | "album" | "copyright" | "writtenBy";
-}
-declare const CoverComponent: React.FC<{
-    className?: string;
-}>;
-declare const TrackComponent: React.FC<{
-    className?: string;
-    children?: React.ReactNode;
-}>;
-declare const ArtistComponent: React.FC<{
-    className?: string;
-    children?: React.ReactNode;
-}>;
-declare const Current: React.FC<CurrentProps> & {
-    Cover: typeof CoverComponent;
-    Track: typeof TrackComponent;
-    Artist: typeof ArtistComponent;
-};
-
 interface SonorityProps {
     variant?: "single" | "playlist" | "multiPlaylist";
     className?: string;
     children: React.ReactNode;
 }
 declare const Sonority: (({ variant, className, children }: SonorityProps) => react_jsx_runtime.JSX.Element) & {
-    Current: React.FC<CurrentProps> & {
-        Cover: React.FC<{
-            className?: string;
-        }>;
-        Track: React.FC<{
+    Current: any;
+    Control: any;
+    Playlist: React.FC<PlaylistProps>;
+    Track: React.FC<TrackProps> & {
+        Title: React.FC<{
             className?: string;
             children?: React.ReactNode;
         }>;
@@ -75,10 +89,113 @@ declare const Sonority: (({ variant, className, children }: SonorityProps) => re
             className?: string;
             children?: React.ReactNode;
         }>;
+        WrittenBy: React.FC<{
+            className?: string;
+            children?: React.ReactNode;
+        }>;
+        Album: React.FC<{
+            className?: string;
+            children?: React.ReactNode;
+        }>;
+        Cover: React.FC<{
+            className?: string;
+            imgClassName?: string;
+            altClassName?: string;
+        }>;
+        Genre: React.FC<{
+            className?: string;
+            children?: React.ReactNode;
+        }>;
+        Year: React.FC<{
+            className?: string;
+            children?: React.ReactNode;
+        }>;
+        Duration: React.FC<{
+            className?: string;
+            children?: React.ReactNode;
+        }>;
+        CustomProperty: React.FC<{
+            name: string;
+            className?: string;
+            children?: React.ReactNode;
+        }>;
     };
-    Control: React.FC<ControlProps>;
-    Playlist: React.FC<PlaylistProps>;
-    Track: React.FC<TrackComponentProps>;
 };
+
+declare const Control: any | (React.FC<{
+    children?: React.ReactNode;
+    className?: string;
+}> & {
+    Play: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Pause: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Previous: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Next: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Seek: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Volume: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Shuffle: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Repeat: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+});
+
+declare const Current: React.FC<{
+    children?: React.ReactNode | any;
+    className?: string | any;
+}> | (any & {
+    Cover: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Track: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Artist: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Album: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    WrittenBy: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Copyright: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Genre: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Year: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+});
 
 export { Control, Current, Playlist, Sonority, Track };

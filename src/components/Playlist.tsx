@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useSonority } from "../context/SonorityContext";
-import { Track, TrackComponentProps as TrackProps } from "./Track";
+import { Track, TrackProps } from "./Track";
 
 export interface PlaylistProps {
   name: string;
