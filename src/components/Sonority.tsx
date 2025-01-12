@@ -1,4 +1,3 @@
-// src/components/Sonority.tsx
 import React from "react";
 import { SonorityProvider } from "../context/SonorityContext";
 import { Current } from "./Current";
