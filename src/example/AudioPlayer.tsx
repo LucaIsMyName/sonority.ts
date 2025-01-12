@@ -1,7 +1,8 @@
-import React from "react";
-import { Play, Pause, SkipBack, SkipForward, Volume2, Volume1, VolumeX, List, Disc, Expand } from "lucide-react";
+import React, { useState } from "react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Volume1, VolumeX, List, Disc, Expand, Music2 } from "lucide-react";
 import { Sonority } from "../components/Sonority";
 import { useSonority } from "../context/SonorityContext";
+import { Visualizer } from "../components/Visualizer";
 
 function getRandomImageUrl() {
   // i have 4 images in /public/img named img-1.jgp, img-2.jpg, ... , get a random one of these
@@ -93,6 +94,7 @@ const comprehensivePlaylist = [
 
 // Spotify/Apple Music-like Interface
 const SpotifyStylePlayer = () => {
+  const [visualizerType, setVisualizerType] = useState<"bars" | "waves" | "lines" | "circle" | "equalizer">("bars");
   const { state } = useSonority();
 
   const formatTime = (time: number) => {
@@ -101,8 +103,15 @@ const SpotifyStylePlayer = () => {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const cycleVisualizerType = () => {
+    const types = ["bars", "waves", "lines", "circle", "equalizer"];
+    const currentIndex = types.indexOf(visualizerType);
+    const nextIndex = (currentIndex + 1) % types.length;
+    setVisualizerType(types[nextIndex] as any);
+  };
+
   return (
-    <div className="bg-neutral-900 rounded-lg border-gray-900 border-2 text-white h-screen flex flex-col">
+    <div className="bg-neutral-900 text-white h-screen flex flex-col">
       <div className="flex flex-grow">
         {/* Playlist (Full Width) */}
         <div className="w-full p-6 overflow-y-auto">
@@ -115,7 +124,7 @@ const SpotifyStylePlayer = () => {
               <Sonority.Track
                 key={track.id}
                 {...track}
-                className="flex text-left border border-gray-800 shadow-sm pr-4 w-full items-center p-2 hover:bg-neutral-800 rounded-lg group">
+                className="flex items-center p-2 hover:bg-neutral-800 rounded-lg group">
                 <div className="flex items-center w-full">
                   <Sonority.Track.Cover
                     className="w-12 h-12 mr-4 rounded-md"
@@ -123,7 +132,7 @@ const SpotifyStylePlayer = () => {
                   />
                   <div className="flex-grow">
                     <Sonority.Track.Title className="font-semibold group-hover:text-green-500" />
-                    <Sonority.Track.Artist className="text-xs text-neutral-400" />
+                    <Sonority.Track.Artist className="text-sm text-neutral-400" />
                   </div>
                   <div className="text-neutral-400 text-sm">
                     <Sonority.Track.Album />
@@ -134,19 +143,40 @@ const SpotifyStylePlayer = () => {
           </Sonority.Playlist>
         </div>
 
-        {/* Now Playing Section */}
-        <div className="w-full max-w-96 bg-neutral-800 p-6 py-12 flex flex-col items-center justify-start">
-          <Sonority.Current.Cover className="w-64 h-64 aspect-square rounded-lg shadow-2xl mb-6" />
+        {/* Now Playing Section with Visualizer */}
+        <div className="w-96 bg-neutral-800 p-6 flex flex-col items-center justify-center">
+          <div className="relative mb-6">
+            <Sonority.Current.Cover className="w-72 h-72 rounded-lg shadow-2xl" />
+            {/* Visualizer over the cover */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Visualizer
+                is={visualizerType}
+                width={256}
+                height={64}
+                color="#4ade80"
+                className="w-full h-16"
+              />
+            </div>
+          </div>
+
           <div className="text-center mb-6">
             <Sonority.Current.Track className="text-xl font-bold" />
             <Sonority.Current.Artist className="text-neutral-400" />
           </div>
+
+          {/* Visualizer Type Switcher */}
+          <button
+            onClick={cycleVisualizerType}
+            className="flex items-center space-x-2 text-neutral-300 hover:text-white mb-4">
+            <Music2 className="w-5 h-5" />
+            <span className="text-sm">Change Visualizer</span>
+          </button>
         </div>
       </div>
 
       {/* Controls */}
-      <div className="bg-neutral-800 p-4 shadow-lg">
-        <div className=" mx-auto">
+      <div className="bg-neutral-800 p-4">
+        <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-center space-x-6 mb-4">
             <Sonority.Control.Previous>
               <SkipBack className="w-6 h-6" />
@@ -156,17 +186,12 @@ const SpotifyStylePlayer = () => {
               <SkipForward className="w-6 h-6" />
             </Sonority.Control.Next>
           </div>
-          <div className="flex flex-col gap-4 items-center space-x-4">
-            <section className="flex items-center flex-1 w-full gap-4">
-              <div className=" text-neutral-400 text-sm flex">{formatTime(state.currentTime)}</div>
-              <div className="flex-grow flex-1 w-full flex-1 min-w-96">
-                <Sonority.Control.Seek className=" text-neutral-500 " />
-              </div>
-              <div className="text-neutral-400 text-sm">{formatTime(state.duration)}</div>
-            </section>
-            <div className="flex w-full flex-1 max-w-32">
-              <Sonority.Control.Volume className="text-neutral-500 size-6" />
+          <div className="flex items-center space-x-4">
+            <Sonority.Control.Seek className="flex-grow text-neutral-500" />
+            <div className="text-neutral-400 text-sm">
+              {formatTime(state.currentTime)} / {formatTime(state.duration)}
             </div>
+            <Sonority.Control.Volume className="w-32 text-neutral-500" />
           </div>
         </div>
       </div>

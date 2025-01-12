@@ -1,5 +1,6 @@
 import React from 'react';
-import * as react_jsx_runtime from 'react/jsx-runtime';
+
+declare const Sonority: any;
 
 interface TrackProps {
     className?: string;
@@ -70,57 +71,6 @@ interface PlaylistProps {
     children: React.ReactNode;
 }
 declare const Playlist: React.FC<PlaylistProps>;
-
-interface SonorityProps {
-    variant?: "single" | "playlist" | "multiPlaylist";
-    className?: string;
-    children: React.ReactNode;
-}
-declare const Sonority: (({ variant, className, children }: SonorityProps) => react_jsx_runtime.JSX.Element) & {
-    Current: any;
-    Control: any;
-    Playlist: React.FC<PlaylistProps>;
-    Track: React.FC<TrackProps> & {
-        Title: React.FC<{
-            className?: string;
-            children?: React.ReactNode;
-        }>;
-        Artist: React.FC<{
-            className?: string;
-            children?: React.ReactNode;
-        }>;
-        WrittenBy: React.FC<{
-            className?: string;
-            children?: React.ReactNode;
-        }>;
-        Album: React.FC<{
-            className?: string;
-            children?: React.ReactNode;
-        }>;
-        Cover: React.FC<{
-            className?: string;
-            imgClassName?: string;
-            altClassName?: string;
-        }>;
-        Genre: React.FC<{
-            className?: string;
-            children?: React.ReactNode;
-        }>;
-        Year: React.FC<{
-            className?: string;
-            children?: React.ReactNode;
-        }>;
-        Duration: React.FC<{
-            className?: string;
-            children?: React.ReactNode;
-        }>;
-        CustomProperty: React.FC<{
-            name: string;
-            className?: string;
-            children?: React.ReactNode;
-        }>;
-    };
-};
 
 declare const Control: any | (React.FC<{
     children?: React.ReactNode;

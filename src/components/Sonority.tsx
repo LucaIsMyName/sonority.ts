@@ -5,11 +5,13 @@ import { Current } from "./Current";
 import { Control } from "./Control";
 import { Playlist } from "./Playlist";
 import { Track } from "./Track";
+import { Visualizer } from "./Visualizer";
 
 interface SonorityProps {
   variant?: "single" | "playlist" | "multiPlaylist";
   className?: string;
   children: React.ReactNode;
+  [key: string]: any;
 }
 
 const SonorityBase: React.FC<SonorityProps> = ({ variant = "single", className, children }) => {
@@ -23,9 +25,8 @@ const SonorityBase: React.FC<SonorityProps> = ({ variant = "single", className, 
   );
 };
 
-// Create the compound component with the provider built-in
-const Sonority = Object.assign(
-  ({ variant, className, children }: SonorityProps) => (
+const Sonority: any = Object.assign(
+  ({ variant, className, children }: SonorityProps | any) => (
     <SonorityProvider id>
       <SonorityBase
         variant={variant}
@@ -39,7 +40,9 @@ const Sonority = Object.assign(
     Control,
     Playlist,
     Track,
+    Visualizer,
   }
 );
 
 export { Sonority };
+export default Sonority;
