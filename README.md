@@ -9,7 +9,7 @@ Sonority provides a powerful, composable audio player for React applications wit
 - 🎵 Single track and playlist support 
 - 🎨 Fully customizable styling (headless)
 - 🔄 Queue management and track navigation
-- 🎛️ Volume and seek controls
+- 🎛️ Volume, seek, and playback speed controls
 - 🔁 Repeat and shuffle functionality
 - 📱 Responsive and accessible
 - 🎯 TypeScript support
@@ -18,23 +18,29 @@ Sonority provides a powerful, composable audio player for React applications wit
 
 ## Installation
 
+### npm 
 ```bash
-npm install react-sonority
-# or
-yarn add react-sonority
+npm install react-sonority @radix-ui/react-select @radix-ui/react-slider @radix-ui/react-tooltip @radix-ui/react-progress @radix-ui/react-dropdown-menu
+```
+
+### yarn
+```bash
+yarn add react-sonority @radix-ui/react-select @radix-ui/react-slider @radix-ui/react-tooltip @radix-ui/react-progress @radix-ui/react-dropdown-menu
 ```
 
 ## Quick Start
 
 ```jsx
-import { Sonority } from 'react-sonority';
+import { Sonority, useSonority } from 'react-sonority';
 
 function AudioPlayer() {
+  const state = useSonority();
+
   return (
-    <Sonority variant="single" className="p-4">
+    <Sonority variant="playlist" className="p-4">
       {/* Play/Pause Control */}
       <Sonority.Control.Play>
-        {isPlaying ? 'Pause' : 'Play'}
+        {state.isPlaying ? 'Pause' : 'Play'}
       </Sonority.Control.Play>
 
       {/* Track Information */}
@@ -44,12 +50,23 @@ function AudioPlayer() {
       {/* Progress Bar */}
       <Sonority.Control.Seek className="w-full" />
 
+      {/* Volume Controls */}
+      <Sonority.Control.Mute />
+      <Sonority.Control.Volume className="w-24" />
+
       {/* Track Definition */}
-      <Sonority.Track 
-        src="/path/to/audio.mp3" 
-        title="My Track"
-        artist="Artist Name" 
-      />
+      <Sonority.Playlist name="Rock'n'Roll">
+        <Sonority.Track 
+          src="/ohio.mp3" 
+          title="Ohio"
+          artist="The Black Keys" 
+        />
+        <Sonority.Track 
+          src="/out-on-the-weekend.mp3" 
+          title="Out on the Weekend"
+          artist="Neil Young" 
+        />
+      </Sonority.Playlist>
     </Sonority>
   );
 }
@@ -62,7 +79,7 @@ function AudioPlayer() {
 The root component that provides audio context and state management.
 
 #### Props
-- `variant`: `"single" | "playlist" | "multiPlaylist"` 
+- `variant`: `"single" | "playlist"`
 - `className`: Additional CSS classes
 - `children`: React nodes
 
@@ -120,6 +137,82 @@ Audio control components with various interactions.
 - `<Sonority.Control.Volume>`: Volume control
 - `<Sonority.Control.Shuffle>`: Toggle shuffle mode
 - `<Sonority.Control.Repeat>`: Toggle repeat modes
+- `<Sonority.Control.Mute>`: Toggle audio muting
+- `<Sonority.Control.Speed>`: Playback speed control with prop:
+  - options: 
+  ```ts
+  {
+    min: number,
+    max: number,
+    initial: number,
+    steps: number,
+    variant: string
+  }
+  ```
+
+#### Speed Control
+The Speed control supports three variants:
+```jsx
+// Range slider
+<Sonority.Control.Speed
+  options={{
+    min: float,
+    max: float,
+    step: float,
+    variant: "range"
+  }}
+  className="w-full"
+/>
+
+// Select dropdown
+<Sonority.Control.Speed
+  options={{
+    variant: "select"
+  }}
+  className="p-2 border rounded"
+/>
+
+// Button group
+<Sonority.Control.Speed
+  options={{
+    variant: "buttons"
+  }}>
+  {({ speeds, currentSpeed, setSpeed }) => (
+    <div className="flex gap-2">
+      {speeds.map(speed => (
+        <button
+          key={speed}
+          onClick={() => setSpeed(speed)}
+          className={currentSpeed === speed ? 'active' : ''}>
+          {speed}x
+        </button>
+      ))}
+    </div>
+  )}
+</Sonority.Control.Speed>
+```
+
+#### Speed Control Options
+- `min`: Minimum speed (default: 0)
+- `max`: Maximum speed (default: 2)
+- `step`: Speed increment (default: 0.5)
+- `variant`: "range" | "select" | "buttons"
+- `default`: Default speed value (default: 1)
+
+#### Mute Control
+```jsx
+import 
+// Basic usage
+<Sonority.Control.Mute />
+
+// With custom content
+<Sonority.Control.Mute>
+  {isMuted ? 'Unmute' : 'Mute'}
+</Sonority.Control.Mute>
+
+// With initial state
+<Sonority.Control.Mute initialMuted={true} />
+```
 
 ## Advanced Usage Examples
 
@@ -186,8 +279,8 @@ Full TypeScript type definitions included.
 
 ## License
 
-MIT © Lucas Mack
+MIT © LucaIsMyName
 
 ---
 
-For more detailed examples and community support, visit our [GitHub Repository](https://github.com/LucaIsMyName/react-sonority).
+For more detailed examples and community support, visit our [GitHub Repository](https://github.com/LucaIsMyName/sonority.ts).

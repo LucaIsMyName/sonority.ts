@@ -1,5 +1,7 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 var React5 = require('react');
 var jsxRuntime = require('react/jsx-runtime');
 var Slider = require('@radix-ui/react-slider');
@@ -65,9 +67,12 @@ var initialState = {
   currentTime: 0,
   duration: 0,
   volume: 1,
+  previousVolume: 1,
+  isMuted: false,
   isShuffled: false,
   isRepeating: false,
   isRepeatingOne: false,
+  playbackRate: 1,
   queue: []
 };
 var SonorityContext = React5.createContext(null);
@@ -150,6 +155,32 @@ var sonorityReducer = (state, action) => {
         // Maintain play state when changing tracks
       };
     }
+    case "TOGGLE_MUTE":
+      if (state.isMuted) {
+        return {
+          ...state,
+          isMuted: false,
+          volume: state.previousVolume
+        };
+      } else {
+        return {
+          ...state,
+          isMuted: true,
+          previousVolume: state.volume,
+          volume: 0
+        };
+      }
+    case "SET_MUTED":
+      return {
+        ...state,
+        isMuted: action.payload,
+        volume: action.payload ? 0 : state.previousVolume
+      };
+    case "SET_PLAYBACK_RATE":
+      return {
+        ...state,
+        playbackRate: action.payload
+      };
     default:
       return state;
   }
@@ -279,6 +310,11 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
     setVolume: (volume) => {
       if (audioRef.current) {
         audioRef.current.volume = volume;
+      }
+    },
+    setPlaybackRate: (rate) => {
+      if (audioRef.current) {
+        audioRef.current.playbackRate = rate;
       }
     }
   };
@@ -501,11 +537,166 @@ Control.Seek = ({ className, children }) => {
     }
   );
 };
-Control.Volume = ({ className, children }) => {
+Control.Mute = ({ className, children, initialMuted = false }) => {
+  const { state, dispatch } = useControlContext();
+  React5.useEffect(() => {
+    if (initialMuted) {
+      dispatch({ type: "SET_MUTED", payload: true });
+    }
+  }, []);
+  const handleMute = () => {
+    dispatch({ type: "TOGGLE_MUTE" });
+  };
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "button",
+    {
+      onClick: handleMute,
+      className,
+      "aria-label": state.isMuted ? "Unmute" : "Mute",
+      title: state.isMuted ? "Unmute" : "Mute",
+      children: children || (state.isMuted ? "Unmute" : "Mute")
+    }
+  );
+};
+Control.Speed = ({ className, options = {}, children }) => {
+  var _a, _b, _c, _d;
+  const { state, dispatch, audioControls } = useControlContext();
+  const { min = 0, max = 2, default: defaultValue = 1, steps = 0.5, variant = "range" } = options;
+  const speeds = React5__default.default.useMemo(() => {
+    const count = (max - min) / steps + 1;
+    return Array.from({ length: count }, (_, i) => min + i * steps);
+  }, [min, max, steps]);
+  const handleSpeedChange = (speed) => {
+    dispatch({ type: "SET_PLAYBACK_RATE", payload: speed });
+    if (audioControls == null ? void 0 : audioControls.setPlaybackRate) {
+      audioControls.setPlaybackRate(speed);
+    }
+  };
+  if (variant === "buttons" && typeof children === "function") {
+    return children({
+      speeds,
+      currentSpeed: (_a = state.playbackRate) != null ? _a : defaultValue,
+      setSpeed: handleSpeedChange
+    });
+  }
+  if (variant === "range") {
+    return /* @__PURE__ */ jsxRuntime.jsxs(
+      Slider__namespace.Root,
+      {
+        style: {
+          width: "100%",
+          height: "10px",
+          position: "relative",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          touchAction: "none",
+          userSelect: "none"
+        },
+        value: [(_b = state.playbackRate) != null ? _b : defaultValue],
+        min,
+        max,
+        step: steps,
+        onValueChange: ([value]) => handleSpeedChange(value),
+        className,
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsx(
+            Slider__namespace.Track,
+            {
+              style: {
+                position: "relative",
+                flexGrow: 1,
+                height: "4px",
+                backgroundColor: "currentColor",
+                borderRadius: "9999px"
+              },
+              children: /* @__PURE__ */ jsxRuntime.jsx(
+                Slider__namespace.Range,
+                {
+                  style: {
+                    position: "absolute",
+                    height: "100%",
+                    backgroundColor: "currentColor",
+                    borderRadius: "9999px"
+                  }
+                }
+              )
+            }
+          ),
+          /* @__PURE__ */ jsxRuntime.jsx(
+            Slider__namespace.Thumb,
+            {
+              style: {
+                width: "16px",
+                height: "16px",
+                minHeight: "16px",
+                minWidth: "16px",
+                backgroundColor: "currentColor",
+                border: "2px solid white",
+                outline: "none",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                transition: "background-color 0.2s"
+              },
+              "aria-label": "Speed"
+            }
+          )
+        ]
+      }
+    );
+  }
+  if (variant === "select") {
+    return /* @__PURE__ */ jsxRuntime.jsx(
+      "select",
+      {
+        className,
+        value: (_c = state.playbackRate) != null ? _c : defaultValue,
+        onChange: (e) => handleSpeedChange(Number(e.target.value)),
+        children: speeds.map((speed) => /* @__PURE__ */ jsxRuntime.jsxs(
+          "option",
+          {
+            value: speed,
+            children: [
+              speed,
+              "x"
+            ]
+          },
+          speed
+        ))
+      }
+    );
+  }
+  if (variant === "buttons") {
+    if (typeof children === "function") {
+      return children({
+        speeds,
+        currentSpeed: (_d = state.playbackRate) != null ? _d : defaultValue,
+        setSpeed: handleSpeedChange
+      });
+    }
+    return /* @__PURE__ */ jsxRuntime.jsx("div", { className: `flex gap-2 ${className}`, children: speeds.map((speed) => {
+      var _a2;
+      return /* @__PURE__ */ jsxRuntime.jsxs(
+        "button",
+        {
+          onClick: () => handleSpeedChange(speed),
+          className: `px-2 py-1 rounded ${((_a2 = state.playbackRate) != null ? _a2 : defaultValue) === speed ? "bg-blue-500 text-white" : "bg-gray-200"}`,
+          children: [
+            speed,
+            "x"
+          ]
+        },
+        speed
+      );
+    }) });
+  }
+  return null;
+};
+Control.Volume = ({ className }) => {
   const { state, dispatch, audioControls } = useControlContext();
   return /* @__PURE__ */ jsxRuntime.jsxs(
     Slider__namespace.Root,
     {
+      className,
       style: {
         width: "100%",
         height: "10px",
@@ -1055,10 +1246,15 @@ var Sonority = Object.assign(
   }
 );
 
+// src/index.ts
+var src_default = Sonority;
+
 exports.Control = Control;
 exports.Current = Current;
 exports.Playlist = Playlist;
 exports.Sonority = Sonority;
 exports.Track = Track2;
+exports.default = src_default;
+exports.useSonority = useSonority;
 //# sourceMappingURL=out.js.map
 //# sourceMappingURL=index.cjs.map

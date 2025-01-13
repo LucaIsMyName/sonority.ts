@@ -3,6 +3,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, Volume1, VolumeX, List, Di
 import { Sonority } from "../components/Sonority";
 import { useSonority } from "../context/SonorityContext";
 import { Visualizer } from "../components/Visualizer";
+import SpeedControlExamples from "./SpeedControlExamples";
 
 function getRandomImageUrl() {
   // i have 4 images in /public/img named img-1.jgp, img-2.jpg, ... , get a random one of these
@@ -322,8 +323,24 @@ const SimplePlaylistPlayer = () => {
             <Sonority.Control.Next>
               <SkipForward className="w-5 h-5 text-gray-600" />
             </Sonority.Control.Next>
+
+            {/* Playback Speed Controls */}
           </div>
         </div>
+        <div className="flex items-center space-x-4">
+          <Sonority.Control.Mute className="">{state.isMuted ? "🔇" : "🔊"}</Sonority.Control.Mute>
+        </div>
+        <div className="text-sm text-gray-500">Playback Speed</div>
+        <Sonority.Control.Speed
+          options={{
+            min: 0,
+            max: 2,
+            default: 1,
+            steps: 0.5,
+            variant: "buttons",
+          }}
+          className="text-sm"
+        />
         <div className="p-4">
           <Sonority.Control.Seek className="w-full " />
         </div>
@@ -349,6 +366,11 @@ const AudioPlayerExamples = () => {
         <SingleTrackPlayerWrapper />
         <SimplePlaylistPlayerWrapper />
         <SpotifyStylePlayerWrapper />
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">Speed Control Variants</h2>
+        <SpeedControlExamples />
       </div>
     </div>
   );

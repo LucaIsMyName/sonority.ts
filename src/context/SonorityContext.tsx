@@ -10,6 +10,9 @@ interface SonorityState {
   currentTime: number;
   duration: number;
   volume: number;
+  previousVolume: number;
+  isMuted: boolean;
+  playbackRate: number;
   isShuffled: boolean;
   isRepeating: boolean;
   isRepeatingOne: boolean;
@@ -19,6 +22,7 @@ interface SonorityState {
 interface AudioControls {
   seek: (time: number) => void;
   setVolume: (volume: number) => void;
+  setPlaybackRate: (rate: number) => void;
 }
 
 interface SonorityContextType {
@@ -34,15 +38,18 @@ const initialState: SonorityState = {
   currentTime: 0,
   duration: 0,
   volume: 1,
+  previousVolume: 1,
+  isMuted: false,
   isShuffled: false,
   isRepeating: false,
   isRepeatingOne: false,
+  playbackRate: 1,
   queue: [],
 };
 
 export const SonorityContext = createContext<SonorityContextType | null>(null);
 
-type SonorityAction = { type: "SET_TRACK"; payload: TrackProps } | { type: "SET_PLAYLIST"; payload: PlaylistProps } | { type: "PLAY" } | { type: "PAUSE" } | { type: "SET_VOLUME"; payload: number } | { type: "SET_TIME"; payload: number } | { type: "TOGGLE_SHUFFLE" } | { type: "TOGGLE_REPEAT" } | { type: "TOGGLE_REPEAT_ONE" } | { type: "NEXT_TRACK" } | { type: "PREVIOUS_TRACK" } | { type: "SET_QUEUE"; payload: TrackProps[] };
+type SonorityAction = { type: "SET_TRACK"; payload: TrackProps } | { type: "SET_PLAYLIST"; payload: PlaylistProps } | { type: "PLAY" } | { type: "PAUSE" } | { type: "SET_VOLUME"; payload: number } | { type: "SET_TIME"; payload: number } | { type: "SET_DURATION"; payload: number } | { type: "TOGGLE_SHUFFLE" } | { type: "TOGGLE_REPEAT" } | { type: "TOGGLE_REPEAT_ONE" } | { type: "NEXT_TRACK" } | { type: "PREVIOUS_TRACK" } | { type: "SET_QUEUE"; payload: TrackProps[] } | { type: "TOGGLE_MUTE" } | { type: "SET_MUTED"; payload: boolean } | { type: "SET_PLAYBACK_RATE"; payload: number };
 
 const sonorityReducer = (state: SonorityState, action: SonorityAction): SonorityState => {
   switch (action.type) {
@@ -114,6 +121,33 @@ const sonorityReducer = (state: SonorityState, action: SonorityAction): Sonority
         isPlaying: state.isPlaying, // Maintain play state when changing tracks
       };
     }
+    case "TOGGLE_MUTE":
+      if (state.isMuted) {
+        // Unmuting - restore previous volume
+        return {
+          ...state,
+          isMuted: false,
+          volume: state.previousVolume,
+        };
+      } else {
+        return {
+          ...state,
+          isMuted: true,
+          previousVolume: state.volume,
+          volume: 0,
+        };
+      }
+    case "SET_MUTED":
+      return {
+        ...state,
+        isMuted: action.payload,
+        volume: action.payload ? 0 : state.previousVolume,
+      };
+    case "SET_PLAYBACK_RATE":
+      return {
+        ...state,
+        playbackRate: action.payload,
+      };
     default:
       return state;
   }
@@ -269,6 +303,11 @@ export const SonorityProvider: React.FC<{ children: React.ReactNode; id: any }> 
     setVolume: (volume: number) => {
       if (audioRef.current) {
         audioRef.current.volume = volume;
+      }
+    },
+    setPlaybackRate: (rate: number) => {
+      if (audioRef.current) {
+        audioRef.current.playbackRate = rate;
       }
     },
   };
