@@ -1,4 +1,4 @@
-export type SonorityVariant = 'single' | 'playlist' | 'multiPlaylist';
+export type SonorityVariant = "single" | "playlist" | "multiPlaylist";
 
 export interface ImageProps {
   src: string;
@@ -16,15 +16,14 @@ export interface TrackProps {
   writtenBy?: string;
   isDownloadActive?: boolean;
   image?: ImageProps;
-  album?: string;  // Add this line
-  [key: string]: any;  // Allow additional properties
-
+  album?: string;
+  [key: string]: any;
 }
 
 export interface PlaylistProps {
   id: string;
   name?: string;
-  order?: 'asc' | 'desc' | 'dateAdded' | 'artist' | 'copyright' | 'writtenBy';
+  order?: "asc" | "desc" | "dateAdded" | "artist" | "copyright" | "writtenBy";
   isDownloadActive?: boolean;
   isShuffleActive?: boolean;
   image?: ImageProps;

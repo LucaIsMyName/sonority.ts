@@ -1,14 +1,29 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useSonority } from "../context/SonorityContext";
 
 interface VisualizerProps {
   className?: string;
-  is?: "waves" | "lines" | "bars" | "circle" | "equalizer" | "none" | undefined;
+  variant?: "waves" | "lines" | "bars" | "circle" | "equalizer" | "none" | undefined;
   width?: number;
   height?: number;
   color?: string;
 }
 
-export const Visualizer = ({ is = "bars", className = "", width = 300, height = 150, color = "#4ade80" }: VisualizerProps) => {
+/**
+ * 
+ * @param variant - The type of visualizer to render. Can be "waves", "lines", "bars", "circle", "equalizer", or "none".
+ * @param className - Additional CSS classes to apply to the canvas element.
+ * @param width - The width of the visualizer canvas.
+ * @param height - The height of the visualizer canvas.
+ * @param color - The color of the visualizer bars, lines, or waves.
+ * @returns A visualizer component that renders audio frequency data in a canvas element.
+ * @example
+ * ```tsx
+ * <Visualizer variant="bars" width={300} height={150} color="#4ade80" />
+ * ```
+ * 
+ */
+export const Visualizer = ({ variant = "bars", className = "", width = 300, height = 150, color = "#4ade80" }: VisualizerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
@@ -23,8 +38,9 @@ export const Visualizer = ({ is = "bars", className = "", width = 300, height = 
       analyzerNode.fftSize = 256;
 
       try {
+        const {state} = useSonority();
         // Get audio element (assuming it exists in the DOM with data-sonority-audio)
-        const audioElement = document.querySelector("[data-sonority-audio]") as HTMLAudioElement;
+        const audioElement = document.querySelector(`[data-sonority-audio=${state.currentTrack?.src}]`) as HTMLAudioElement;
         if (audioElement) {
           const source = audioCtx.createMediaElementSource(audioElement);
           source.connect(analyzerNode);
@@ -155,7 +171,7 @@ export const Visualizer = ({ is = "bars", className = "", width = 300, height = 
     const draw = () => {
       analyser.getByteFrequencyData(data);
 
-      switch (is) {
+      switch (variant) {
         case "waves":
           drawWaves(ctx, data);
           break;
@@ -184,15 +200,14 @@ export const Visualizer = ({ is = "bars", className = "", width = 300, height = 
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [analyser, is, color, width, height]);
+  }, [analyser, variant, color, width, height]);
 
   return (
     <canvas
+      data-sonority-component={`Visualizer?is=${variant?.toString()}`}
       ref={canvasRef}
       width={width}
       height={height}
-      data-sonority-component="visualizer"
-      data-sonority-component-is={is?.toString()}
       className={className}
     />
   );

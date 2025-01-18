@@ -305,6 +305,7 @@ Control.Speed = ({ className, options = {}, children }: ControlSpeedProps) => {
           touchAction: "none",
           userSelect: "none",
         }}
+        data-sonority-component={`Control.Speed?variant=range`}
         value={[state.playbackRate ?? defaultValue]}
         min={min}
         max={max}
@@ -349,6 +350,7 @@ Control.Speed = ({ className, options = {}, children }: ControlSpeedProps) => {
   if (variant === "select") {
     return (
       <select
+        data-sonority-component={`Control.Speed?variant=select`}
         className={className}
         value={state.playbackRate ?? defaultValue}
         onChange={(e) => handleSpeedChange(Number(e.target.value))}>
@@ -376,6 +378,7 @@ Control.Speed = ({ className, options = {}, children }: ControlSpeedProps) => {
       <div className={`flex gap-2 ${className}`}>
         {speeds.map((speed) => (
           <button
+            data-sonority-component={`Control.Speed?variant=buttons`}
             key={speed}
             onClick={() => handleSpeedChange(speed)}
             className={`px-2 py-1 rounded ${(state.playbackRate ?? defaultValue) === speed ? "bg-blue-500 text-white" : "bg-gray-200"}`}>
@@ -400,6 +403,7 @@ Control.Volume = ({ className }: VolumeProps) => {
 
   return (
     <Slider.Root
+      data-sonority-component={`Control.Volume`}
       className={className}
       style={{
         width: "100%",
@@ -472,6 +476,7 @@ Control.Shuffle = ({ className, children }: ShuffleProps) => {
 
   return (
     <button
+      data-sonority-component={`Control.Shuffle`}
       onClick={() => dispatch({ type: "TOGGLE_SHUFFLE" })}
       className={className}>
       {children || "Shuffle"}
@@ -502,6 +507,7 @@ Control.Repeat = ({ className, children }: RepeatProps) => {
 
   return (
     <button
+      data-sonority-component={`Control.Repeat`}
       onClick={handleRepeat}
       className={className}>
       {children || "Repeat"}

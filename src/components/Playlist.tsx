@@ -10,19 +10,12 @@ export interface PlaylistProps {
 }
 
 // src/components/Playlist.tsx
-export const Playlist: React.FC<PlaylistProps> = ({
-  name,
-  id,
-  children,
-  className,
-}) => {
+export const Playlist: React.FC<PlaylistProps> = ({ name, id, children, className }) => {
   const { dispatch, state } = useSonority();
 
   // Single initialization effect
   useEffect(() => {
-    const trackElements = React.Children.toArray(children).filter(
-      (child) => React.isValidElement(child) && child.type === Track
-    );
+    const trackElements = React.Children.toArray(children).filter((child) => React.isValidElement(child) && child.type === Track);
 
     const extractedTracks = trackElements.map((track: any) => ({
       ...track.props,
@@ -46,7 +39,7 @@ export const Playlist: React.FC<PlaylistProps> = ({
         payload: extractedTracks[0],
       });
     }
-  }, [id, name]); 
+  }, [id, name]);
 
   const handleTrackSelect = (trackProps: TrackProps) => {
     dispatch({
@@ -57,11 +50,10 @@ export const Playlist: React.FC<PlaylistProps> = ({
 
   return (
     <div
-      data-sonority-component="playlist"
+      data-sonority-component="Playlist"
       data-sonority-playlist-id={id}
       data-sonority-playlist-name={name}
-      className={className}
-    >
+      className={className}>
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child) && child.type === Track) {
           return React.cloneElement(child, {

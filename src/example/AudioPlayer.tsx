@@ -151,7 +151,7 @@ const SpotifyStylePlayer = () => {
             {/* Visualizer over the cover */}
             <div className="absolute inset-0 flex items-center justify-center">
               <Visualizer
-                is={visualizerType}
+                variant={visualizerType}
                 width={256}
                 height={64}
                 color="#4ade80"

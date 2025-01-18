@@ -84,7 +84,6 @@ var sonorityReducer = (state, action) => {
         ...state,
         currentTrack: action.payload,
         currentTime: 0
-        // Don't change isPlaying state here
       };
     }
     case "TOGGLE_SHUFFLE":
@@ -186,7 +185,7 @@ var sonorityReducer = (state, action) => {
   }
 };
 var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
-  var _a;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
   const [state, dispatch] = React5.useReducer(sonorityReducer, initialState);
   const audioRef = React5.useRef(null);
   const playerIdRef = React5.useRef(id);
@@ -324,12 +323,41 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
     audioControls
   };
   return /* @__PURE__ */ jsxRuntime.jsxs(SonorityContext.Provider, { value, children: [
-    children,
+    /* @__PURE__ */ jsxRuntime.jsx(
+      "div",
+      {
+        "data-sonority-state": true,
+        "data-sonority-playlist": (_b = state.currentPlaylist) == null ? void 0 : _b.name,
+        "data-sonority-playlist-isShuffle": (_c = state.currentPlaylist) == null ? void 0 : _c.isShuffleActive,
+        "data-sonority-playlist-id": (_d = state.currentPlaylist) == null ? void 0 : _d.id,
+        "data-sonority-track-title": (_e = state.currentTrack) == null ? void 0 : _e.title,
+        "data-sonority-track-artist": (_f = state.currentTrack) == null ? void 0 : _f.artist,
+        "data-sonority-track-copyright": (_g = state.currentTrack) == null ? void 0 : _g.copyright,
+        "data-sonority-track-writtenBy": (_h = state.currentTrack) == null ? void 0 : _h.writtenBy,
+        "data-sonority-track-isDownloadActive-": (_i = state.currentTrack) == null ? void 0 : _i.isDownloadActive,
+        "data-sonority-track-album-": (_j = state.currentTrack) == null ? void 0 : _j.album,
+        "data-sonority-track-src-": (_k = state.currentTrack) == null ? void 0 : _k.src,
+        "data-sonority-track-duration-": (_l = state.currentTrack) == null ? void 0 : _l.duration,
+        "data-sonority-track-copyright-": (_m = state.currentTrack) == null ? void 0 : _m.copyright,
+        "data-sonority-track-dateAdded-": (_n = state.currentTrack) == null ? void 0 : _n.dateAdded,
+        children
+      }
+    ),
     state.currentTrack && /* @__PURE__ */ jsxRuntime.jsx(
       "audio",
       {
+        style: {
+          position: "absolute",
+          top: -9999,
+          left: -9999,
+          height: 0,
+          width: 0,
+          clipPath: "0px 0px 0px 0px"
+        },
+        id: (_o = state.currentTrack) == null ? void 0 : _o.id,
         ref: audioRef,
         src: state.currentTrack.src,
+        "data-sonority-audio": state.currentTrack.src,
         preload: "metadata"
       }
     )
@@ -365,12 +393,33 @@ var createSubcomponent = (propName, defaultRenderer) => {
   return ({ className, children }) => {
     const { currentTrack } = useCurrentContext();
     if (children)
-      return /* @__PURE__ */ jsxRuntime.jsx("div", { className, children });
+      return /* @__PURE__ */ jsxRuntime.jsx(
+        "div",
+        {
+          "data-sonority-component": `Current.${propName}`,
+          className,
+          children
+        }
+      );
     if (defaultRenderer && currentTrack) {
       const renderedContent = defaultRenderer(currentTrack);
-      return renderedContent ? /* @__PURE__ */ jsxRuntime.jsx("div", { className, children: renderedContent }) : null;
+      return renderedContent ? /* @__PURE__ */ jsxRuntime.jsx(
+        "div",
+        {
+          "data-sonority-component": `Current.${propName}`,
+          className,
+          children: renderedContent
+        }
+      ) : null;
     }
-    return currentTrack && currentTrack[propName] ? /* @__PURE__ */ jsxRuntime.jsx("div", { className, children: currentTrack[propName] }) : null;
+    return currentTrack && currentTrack[propName] ? /* @__PURE__ */ jsxRuntime.jsx(
+      "div",
+      {
+        "data-sonority-component": `Current.${propName}`,
+        className,
+        children: currentTrack[propName]
+      }
+    ) : null;
   };
 };
 Current.Cover = createSubcomponent(
@@ -393,6 +442,10 @@ Current.Artist = createSubcomponent("artist");
 Current.Album = createSubcomponent("album");
 Current.WrittenBy = createSubcomponent("writtenBy");
 Current.Copyright = createSubcomponent("copyright");
+Current.Genre = createSubcomponent("genre");
+Current.Year = createSubcomponent("year");
+Current.Duration = createSubcomponent("duration");
+Current.CurrentTime = createSubcomponent("currentTime");
 var ControlContext = React5.createContext(null);
 var ControlContextProvider = ({ children, className }) => {
   const { state, dispatch, audioControls } = useSonority();
@@ -593,6 +646,7 @@ Control.Speed = ({ className, options = {}, children }) => {
           touchAction: "none",
           userSelect: "none"
         },
+        "data-sonority-component": `Control.Speed?variant=range`,
         value: [(_b = state.playbackRate) != null ? _b : defaultValue],
         min,
         max,
@@ -648,6 +702,7 @@ Control.Speed = ({ className, options = {}, children }) => {
     return /* @__PURE__ */ jsxRuntime.jsx(
       "select",
       {
+        "data-sonority-component": `Control.Speed?variant=select`,
         className,
         value: (_c = state.playbackRate) != null ? _c : defaultValue,
         onChange: (e) => handleSpeedChange(Number(e.target.value)),
@@ -678,6 +733,7 @@ Control.Speed = ({ className, options = {}, children }) => {
       return /* @__PURE__ */ jsxRuntime.jsxs(
         "button",
         {
+          "data-sonority-component": `Control.Speed?variant=buttons`,
           onClick: () => handleSpeedChange(speed),
           className: `px-2 py-1 rounded ${((_a2 = state.playbackRate) != null ? _a2 : defaultValue) === speed ? "bg-blue-500 text-white" : "bg-gray-200"}`,
           children: [
@@ -696,6 +752,7 @@ Control.Volume = ({ className }) => {
   return /* @__PURE__ */ jsxRuntime.jsxs(
     Slider__namespace.Root,
     {
+      "data-sonority-component": `Control.Volume`,
       className,
       style: {
         width: "100%",
@@ -768,6 +825,7 @@ Control.Shuffle = ({ className, children }) => {
   return /* @__PURE__ */ jsxRuntime.jsx(
     "button",
     {
+      "data-sonority-component": `Control.Shuffle`,
       onClick: () => dispatch({ type: "TOGGLE_SHUFFLE" }),
       className,
       children: children || "Shuffle"
@@ -789,6 +847,7 @@ Control.Repeat = ({ className, children }) => {
   return /* @__PURE__ */ jsxRuntime.jsx(
     "button",
     {
+      "data-sonority-component": `Control.Repeat`,
       onClick: handleRepeat,
       className,
       children: children || "Repeat"
@@ -796,7 +855,7 @@ Control.Repeat = ({ className, children }) => {
   );
 };
 var TrackContext = React5.createContext(null);
-var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onClick, children, coverWidth = 32, coverClassName = "", genre, year, duration, ...props }) => {
+var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onClick, children, coverWidth = 32, coverClassName = "", genre, year, duration, copyright, ...props }) => {
   var _a;
   const { dispatch, state } = useSonority();
   const isCurrentTrack = ((_a = state.currentTrack) == null ? void 0 : _a.id) === id;
@@ -811,6 +870,7 @@ var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onCl
         album,
         image,
         src,
+        copyright,
         genre,
         year,
         duration,
@@ -829,6 +889,7 @@ var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onCl
           writtenBy,
           album,
           image,
+          copyright,
           src,
           id,
           genre,
@@ -839,7 +900,7 @@ var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onCl
         children: /* @__PURE__ */ jsxRuntime.jsx(
           "button",
           {
-            "data-sonority-component": "track",
+            "data-sonority-component": "Track",
             "data-sonority-current": isCurrentTrack,
             className,
             onClick: handleTrackClick,
@@ -855,6 +916,7 @@ var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onCl
       value: {
         title,
         artist,
+        copyright,
         writtenBy,
         album,
         image,
@@ -868,7 +930,7 @@ var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onCl
       children: /* @__PURE__ */ jsxRuntime.jsxs(
         "button",
         {
-          "data-sonority-component": "track",
+          "data-sonority-component": "Track",
           "data-sonority-current": isCurrentTrack,
           className,
           onClick: handleTrackClick,
@@ -877,8 +939,12 @@ var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onCl
             /* @__PURE__ */ jsxRuntime.jsxs("div", { children: [
               /* @__PURE__ */ jsxRuntime.jsx(Track2.Title, {}),
               /* @__PURE__ */ jsxRuntime.jsx(Track2.Artist, {}),
-              writtenBy && /* @__PURE__ */ jsxRuntime.jsx(Track2.WrittenBy, {}),
-              album && /* @__PURE__ */ jsxRuntime.jsx(Track2.Album, {})
+              writtenBy && /* @__PURE__ */ jsxRuntime.jsx("p", { children: /* @__PURE__ */ jsxRuntime.jsx(Track2.WrittenBy, {}) }),
+              copyright && /* @__PURE__ */ jsxRuntime.jsxs("p", { children: [
+                "\xA9 ",
+                /* @__PURE__ */ jsxRuntime.jsx(Track2.Copyright, {})
+              ] }),
+              album && /* @__PURE__ */ jsxRuntime.jsx("p", { children: /* @__PURE__ */ jsxRuntime.jsx(Track2.Album, {}) })
             ] })
           ]
         }
@@ -903,10 +969,18 @@ var formatDuration = (duration) => {
 Track2.Title = ({ className, children }) => {
   const track = useTrackContext();
   if (children)
-    return /* @__PURE__ */ jsxRuntime.jsx("p", { className, children });
+    return /* @__PURE__ */ jsxRuntime.jsx(
+      "span",
+      {
+        "data-sonority-component": `Track.Title`,
+        className,
+        children
+      }
+    );
   return /* @__PURE__ */ jsxRuntime.jsx(
-    "p",
+    "span",
     {
+      "data-sonority-component": `Track.Title`,
       className,
       style: { textAlign: "start" },
       children: track.title
@@ -922,47 +996,122 @@ Track2.Artist = ({ className, children }) => {
 Track2.WrittenBy = ({ className, children }) => {
   const track = useTrackContext();
   if (children)
-    return /* @__PURE__ */ jsxRuntime.jsx("p", { className, children });
-  return track.writtenBy ? /* @__PURE__ */ jsxRuntime.jsxs("p", { className, children: [
-    "Written by: ",
-    track.writtenBy
-  ] }) : null;
+    return /* @__PURE__ */ jsxRuntime.jsx(
+      "span",
+      {
+        "data-sonority-component": `Track.WrittenBy`,
+        className,
+        children
+      }
+    );
+  return track.writtenBy ? /* @__PURE__ */ jsxRuntime.jsx(
+    "span",
+    {
+      "data-sonority-component": `Track.WrittenBy`,
+      className,
+      children: track.writtenBy
+    }
+  ) : null;
 };
 Track2.Album = ({ className, children }) => {
   const track = useTrackContext();
   if (children)
-    return /* @__PURE__ */ jsxRuntime.jsx("p", { className, children });
-  return track.album ? /* @__PURE__ */ jsxRuntime.jsxs("p", { className, children: [
-    "Album: ",
-    track.album
-  ] }) : null;
+    return /* @__PURE__ */ jsxRuntime.jsx(
+      "span",
+      {
+        "data-sonority-component": `Track.Album`,
+        className,
+        children
+      }
+    );
+  return track.album ? /* @__PURE__ */ jsxRuntime.jsx(
+    "span",
+    {
+      "data-sonority-component": `Track.Album`,
+      className,
+      children: track.album
+    }
+  ) : null;
 };
 Track2.Genre = ({ className, children }) => {
   const track = useTrackContext();
   if (children)
-    return /* @__PURE__ */ jsxRuntime.jsx("p", { className, children });
-  return track.genre ? /* @__PURE__ */ jsxRuntime.jsxs("p", { className, children: [
-    "Genre: ",
-    track.genre
-  ] }) : null;
+    return /* @__PURE__ */ jsxRuntime.jsx(
+      "span",
+      {
+        "data-sonority-component": `Track.Genre`,
+        className,
+        children
+      }
+    );
+  return track.genre ? /* @__PURE__ */ jsxRuntime.jsx(
+    "span",
+    {
+      "data-sonority-component": `Track.Genre`,
+      className,
+      children: track.genre
+    }
+  ) : null;
 };
 Track2.Year = ({ className, children }) => {
   const track = useTrackContext();
   if (children)
-    return /* @__PURE__ */ jsxRuntime.jsx("p", { className, children });
-  return track.year ? /* @__PURE__ */ jsxRuntime.jsxs("p", { className, children: [
-    "Year: ",
-    track.year
-  ] }) : null;
+    return /* @__PURE__ */ jsxRuntime.jsx(
+      "span",
+      {
+        "data-sonority-component": `Track.Year`,
+        className,
+        children
+      }
+    );
+  return track.year ? /* @__PURE__ */ jsxRuntime.jsx(
+    "span",
+    {
+      "data-sonority-component": `Track.Year`,
+      className,
+      children: track.year
+    }
+  ) : null;
 };
 Track2.Duration = ({ className, children }) => {
   const track = useTrackContext();
   if (children)
-    return /* @__PURE__ */ jsxRuntime.jsx("p", { className, children });
-  return track.duration ? /* @__PURE__ */ jsxRuntime.jsxs("p", { className, children: [
-    "Duration: ",
-    formatDuration(track.duration)
-  ] }) : null;
+    return /* @__PURE__ */ jsxRuntime.jsx(
+      "span",
+      {
+        "data-sonority-component": `Track.Duration`,
+        className,
+        children
+      }
+    );
+  return track.duration ? /* @__PURE__ */ jsxRuntime.jsx(
+    "span",
+    {
+      "data-sonority-component": `Track.Duration`,
+      className,
+      children: formatDuration(track.duration)
+    }
+  ) : null;
+};
+Track2.CurrentTime = ({ className, children }) => {
+  const track = useTrackContext();
+  if (children)
+    return /* @__PURE__ */ jsxRuntime.jsx(
+      "p",
+      {
+        "data-sonority-component": `Track.CurrentTime`,
+        className,
+        children
+      }
+    );
+  return track.currentTime ? /* @__PURE__ */ jsxRuntime.jsx(
+    "span",
+    {
+      "data-sonority-component": `Track.CurrentTime`,
+      className,
+      children: formatDuration(track.currentTime)
+    }
+  ) : null;
 };
 Track2.Cover = ({ className, imgClassName, altClassName }) => {
   const track = useTrackContext();
@@ -970,6 +1119,7 @@ Track2.Cover = ({ className, imgClassName, altClassName }) => {
     /* @__PURE__ */ jsxRuntime.jsx(
       "img",
       {
+        "data-sonority-component": `Track.Cover`,
         src: track.image.src,
         alt: track.image.alt || track.title,
         className: imgClassName,
@@ -996,24 +1146,31 @@ Track2.CustomProperty = ({ name, className, children }) => {
   const track = useTrackContext();
   const propertyValue = track[name];
   if (children)
-    return /* @__PURE__ */ jsxRuntime.jsx("p", { className, children });
-  return propertyValue ? /* @__PURE__ */ jsxRuntime.jsxs("p", { className, children: [
-    name,
-    ": ",
-    propertyValue.toString()
-  ] }) : null;
+    return /* @__PURE__ */ jsxRuntime.jsx(
+      "p",
+      {
+        "data-sonority-component": `Track.CustomProperty`,
+        className,
+        children
+      }
+    );
+  return propertyValue ? /* @__PURE__ */ jsxRuntime.jsxs(
+    "p",
+    {
+      className,
+      "data-sonority-component": `Track.CustomProperty`,
+      children: [
+        name,
+        ": ",
+        propertyValue.toString()
+      ]
+    }
+  ) : null;
 };
-var Playlist = ({
-  name,
-  id,
-  children,
-  className
-}) => {
+var Playlist = ({ name, id, children, className }) => {
   const { dispatch, state } = useSonority();
   React5.useEffect(() => {
-    const trackElements = React5__default.default.Children.toArray(children).filter(
-      (child) => React5__default.default.isValidElement(child) && child.type === Track2
-    );
+    const trackElements = React5__default.default.Children.toArray(children).filter((child) => React5__default.default.isValidElement(child) && child.type === Track2);
     const extractedTracks = trackElements.map((track) => ({
       ...track.props,
       id: track.props.id || crypto.randomUUID()
@@ -1042,7 +1199,7 @@ var Playlist = ({
   return /* @__PURE__ */ jsxRuntime.jsx(
     "div",
     {
-      "data-sonority-component": "playlist",
+      "data-sonority-component": "Playlist",
       "data-sonority-playlist-id": id,
       "data-sonority-playlist-name": name,
       className,
@@ -1058,7 +1215,7 @@ var Playlist = ({
     }
   );
 };
-var Visualizer = ({ is = "bars", className = "", width = 300, height = 150, color = "#4ade80" }) => {
+var Visualizer = ({ variant = "bars", className = "", width = 300, height = 150, color = "#4ade80" }) => {
   const canvasRef = React5.useRef(null);
   const [audioContext, setAudioContext] = React5.useState(null);
   const [analyser, setAnalyser] = React5.useState(null);
@@ -1066,11 +1223,13 @@ var Visualizer = ({ is = "bars", className = "", width = 300, height = 150, colo
   const animationFrameRef = React5.useRef();
   React5.useEffect(() => {
     const initAudio = async () => {
+      var _a;
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const analyzerNode = audioCtx.createAnalyser();
       analyzerNode.fftSize = 256;
       try {
-        const audioElement = document.querySelector("[data-sonority-audio]");
+        const { state } = useSonority();
+        const audioElement = document.querySelector(`[data-sonority-audio=${(_a = state.currentTrack) == null ? void 0 : _a.src}]`);
         if (audioElement) {
           const source = audioCtx.createMediaElementSource(audioElement);
           source.connect(analyzerNode);
@@ -1178,7 +1337,7 @@ var Visualizer = ({ is = "bars", className = "", width = 300, height = 150, colo
     const data = new Uint8Array(analyser.frequencyBinCount);
     const draw = () => {
       analyser.getByteFrequencyData(data);
-      switch (is) {
+      switch (variant) {
         case "waves":
           drawWaves(ctx, data);
           break;
@@ -1204,15 +1363,14 @@ var Visualizer = ({ is = "bars", className = "", width = 300, height = 150, colo
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [analyser, is, color, width, height]);
+  }, [analyser, variant, color, width, height]);
   return /* @__PURE__ */ jsxRuntime.jsx(
     "canvas",
     {
+      "data-sonority-component": `Visualizer?is=${variant == null ? void 0 : variant.toString()}`,
       ref: canvasRef,
       width,
       height,
-      "data-sonority-component": "visualizer",
-      "data-sonority-component-is": is == null ? void 0 : is.toString(),
       className
     }
   );
@@ -1232,6 +1390,7 @@ var Sonority = Object.assign(
   ({ variant, className, children }) => /* @__PURE__ */ jsxRuntime.jsx(SonorityProvider, { id: true, children: /* @__PURE__ */ jsxRuntime.jsx(
     SonorityBase,
     {
+      "data-sonority-component": `Root`,
       variant,
       className,
       children

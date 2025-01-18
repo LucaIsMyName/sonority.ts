@@ -58,7 +58,6 @@ const sonorityReducer = (state: SonorityState, action: SonorityAction): Sonority
         ...state,
         currentTrack: action.payload,
         currentTime: 0,
-        // Don't change isPlaying state here
       };
     }
     case "TOGGLE_SHUFFLE":
@@ -320,11 +319,37 @@ export const SonorityProvider: React.FC<{ children: React.ReactNode; id: any }> 
 
   return (
     <SonorityContext.Provider value={value}>
-      {children}
+      <div
+        data-sonority-state
+        data-sonority-playlist={state.currentPlaylist?.name}
+        data-sonority-playlist-isShuffle={state.currentPlaylist?.isShuffleActive}
+        data-sonority-playlist-id={state.currentPlaylist?.id}
+        data-sonority-track-title={state.currentTrack?.title}
+        data-sonority-track-artist={state.currentTrack?.artist}
+        data-sonority-track-copyright={state.currentTrack?.copyright}
+        data-sonority-track-writtenBy={state.currentTrack?.writtenBy}
+        data-sonority-track-isDownloadActive-={state.currentTrack?.isDownloadActive}
+        data-sonority-track-album-={state.currentTrack?.album}
+        data-sonority-track-src-={state.currentTrack?.src}
+        data-sonority-track-duration-={state.currentTrack?.duration}
+        data-sonority-track-copyright-={state.currentTrack?.copyright}
+        data-sonority-track-dateAdded-={state.currentTrack?.dateAdded}>
+        {children}
+      </div>
       {state.currentTrack && (
         <audio
+          style={{
+            position: "absolute",
+            top: -9999,
+            left: -9999,
+            height: 0,
+            width: 0,
+            clipPath: "0px 0px 0px 0px",
+          }}
+          id={state.currentTrack?.id}
           ref={audioRef}
           src={state.currentTrack.src}
+          data-sonority-audio={state.currentTrack.src}
           preload="metadata"
         />
       )}

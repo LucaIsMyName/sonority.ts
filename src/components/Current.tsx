@@ -40,6 +40,8 @@ export const Current:
       WrittenBy: React.FC<{ className?: string; children?: React.ReactNode }>;
       Copyright: React.FC<{ className?: string; children?: React.ReactNode }>;
       Genre: React.FC<{ className?: string; children?: React.ReactNode }>;
+      CurrentTime: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Duration: React.FC<{ className?: string; children?: React.ReactNode }>;
       Year: React.FC<{ className?: string; children?: React.ReactNode }>;
     }) = Object.assign(({ children, className }: { children?: React.ReactNode; className?: string }) => <CurrentContextProvider className={className}>{children || <Current.Track />}</CurrentContextProvider>, {
   Provider: CurrentContextProvider,
@@ -62,16 +64,35 @@ const createSubcomponent = (propName: keyof TrackProps, defaultRenderer?: (track
     const { currentTrack } = useCurrentContext();
 
     // If children are explicitly provided, use them
-    if (children) return <div className={className}>{children}</div>;
+    if (children)
+      return (
+        <div
+          data-sonority-component={`Current.${propName}`}
+          className={className}>
+          {children}
+        </div>
+      );
 
     // Use default renderer if provided
     if (defaultRenderer && currentTrack) {
       const renderedContent = defaultRenderer(currentTrack);
-      return renderedContent ? <div className={className}>{renderedContent}</div> : null;
+      return renderedContent ? (
+        <div
+          data-sonority-component={`Current.${propName}`}
+          className={className}>
+          {renderedContent}
+        </div>
+      ) : null;
     }
 
     // Default rendering based on prop
-    return currentTrack && currentTrack[propName] ? <div className={className}>{currentTrack[propName] as any}</div> : null;
+    return currentTrack && currentTrack[propName] ? (
+      <div
+        data-sonority-component={`Current.${propName}`}
+        className={className}>
+        {currentTrack[propName] as any}
+      </div>
+    ) : null;
   };
 };
 
@@ -95,7 +116,9 @@ Current.Artist = createSubcomponent("artist");
 Current.Album = createSubcomponent("album");
 Current.WrittenBy = createSubcomponent("writtenBy");
 Current.Copyright = createSubcomponent("copyright");
-// Current.Genre = createSubcomponent('genre');
-// Current.Year = createSubcomponent('year');
+Current.Genre = createSubcomponent("genre");
+Current.Year = createSubcomponent("year");
+Current.Duration = createSubcomponent("duration");
+Current.CurrentTime = createSubcomponent("currentTime");
 
 export default Current;

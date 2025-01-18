@@ -28,6 +28,7 @@ const Sonority: SonorityProps | any = Object.assign(
   ({ variant, className, children }: SonorityProps | any) => (
     <SonorityProvider id>
       <SonorityBase
+        data-sonority-component={`Root`}
         variant={variant}
         className={className}>
         {children}

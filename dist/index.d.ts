@@ -19,6 +19,7 @@ interface TrackProps$1 {
         alt?: string;
     };
     src: string;
+    copyright: string;
     id: string;
     onClick?: () => void;
     children?: React.ReactNode;
@@ -29,7 +30,7 @@ interface TrackProps$1 {
     duration?: number;
     [key: string]: any;
 }
-declare const Track: React.FC<TrackProps$1> & {
+declare const Track: any | (React.FC<TrackProps$1> & {
     Title: React.FC<{
         className?: string;
         children?: React.ReactNode;
@@ -63,12 +64,18 @@ declare const Track: React.FC<TrackProps$1> & {
         className?: string;
         children?: React.ReactNode;
     }>;
+    Copyright: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+        [key: string]: any;
+    }>;
     CustomProperty: React.FC<{
         name: string;
         className?: string;
         children?: React.ReactNode;
     }>;
-};
+    [key: string]: any;
+});
 
 interface PlaylistProps$1 {
     name: string;
@@ -189,6 +196,14 @@ declare const Current: React.FC<{
         children?: React.ReactNode;
     }>;
     Genre: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    CurrentTime: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+    }>;
+    Duration: React.FC<{
         className?: string;
         children?: React.ReactNode;
     }>;

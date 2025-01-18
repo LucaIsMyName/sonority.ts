@@ -24,7 +24,7 @@ const RangeSpeedPlayer = () => {
         <Sonority.Control.Play className="p-2 rounded-full bg-blue-500 text-white">{state.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}</Sonority.Control.Play>
         <div>
           <Sonority.Current.Track className="font-medium" />
-          <div className="text-sm text-gray-500">Current Speed: {state.playbackRate}x</div>
+          <div className="text-sm text-gray-500">Current Speed: {state.playbackRate}&times;</div>
         </div>
       </div>
 
@@ -64,7 +64,7 @@ const SelectSpeedPlayer = () => {
         <Sonority.Control.Play className="p-2 rounded-full bg-green-500 text-white">{state.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}</Sonority.Control.Play>
         <div>
           <Sonority.Current.Track className="font-medium" />
-          <div className="text-sm text-gray-500">Current Speed: {state.playbackRate}x</div>
+          <div className="text-sm text-gray-500">Current Speed: {state.playbackRate}&times;</div>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ const ButtonsSpeedPlayer = () => {
         <Sonority.Control.Play className="p-2 rounded-full bg-purple-500 text-white">{state.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}</Sonority.Control.Play>
         <div>
           <Sonority.Current.Track className="font-medium" />
-          <div className="text-sm text-gray-500">Current Speed: {state.playbackRate}x</div>
+          <div className="text-sm text-gray-500">Current Speed: {state.playbackRate}&times;</div>
         </div>
       </div>
 
@@ -109,14 +109,14 @@ const ButtonsSpeedPlayer = () => {
             steps: 1,
             variant: "buttons",
           }}>
-          {({ speeds, currentSpeed, setSpeed }) => (
+          {({ speeds, currentSpeed, setSpeed }: any): React.ReactNode => (
             <div className="flex flex-wrap gap-2">
-              {speeds.map((speed:any) => (
+              {speeds.map((speed: string) => (
                 <button
                   key={speed}
                   onClick={() => setSpeed(speed)}
                   className={`px-3 py-1 rounded-full text-sm ${currentSpeed === speed ? "bg-purple-500 text-white" : "bg-gray-100 hover:bg-gray-200"}`}>
-                  {speed}x
+                  {speed.toString()}&times;
                 </button>
               ))}
             </div>

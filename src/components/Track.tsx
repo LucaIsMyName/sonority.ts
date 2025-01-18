@@ -9,6 +9,7 @@ export interface TrackProps {
   album?: string;
   image?: { src: string; alt?: string };
   src: string;
+  copyright: string;
   id: string;
   onClick?: () => void;
   children?: React.ReactNode;
@@ -23,25 +24,33 @@ export interface TrackProps {
 // Create a context to share track information
 const TrackContext = createContext<TrackProps | null>(null);
 
-export const Track: React.FC<TrackProps> & {
-  Title: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Artist: React.FC<{ className?: string; children?: React.ReactNode }>;
-  WrittenBy: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Album: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Cover: React.FC<{
-    className?: string;
-    imgClassName?: string;
-    altClassName?: string;
-  }>;
-  Genre: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Year: React.FC<{ className?: string; children?: React.ReactNode }>;
-  Duration: React.FC<{ className?: string; children?: React.ReactNode }>;
-  CustomProperty: React.FC<{
-    name: string;
-    className?: string;
-    children?: React.ReactNode;
-  }>;
-} = ({ className, title, artist, writtenBy, album, image, src, id, onClick, children, coverWidth = 32, coverClassName = "", genre, year, duration, ...props }) => {
+export const Track:
+  | any
+  | (React.FC<TrackProps> & {
+      Title: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Artist: React.FC<{ className?: string; children?: React.ReactNode }>;
+      WrittenBy: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Album: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Cover: React.FC<{
+        className?: string;
+        imgClassName?: string;
+        altClassName?: string;
+      }>;
+      Genre: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Year: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Duration: React.FC<{ className?: string; children?: React.ReactNode }>;
+      Copyright: React.FC<{
+        className?: string;
+        children?: React.ReactNode;
+        [key: string]: any;
+      }>;
+      CustomProperty: React.FC<{
+        name: string;
+        className?: string;
+        children?: React.ReactNode;
+      }>;
+      [key: string]: any;
+    }) = ({ className, title, artist, writtenBy, album, image, src, id, onClick, children, coverWidth = 32, coverClassName = "", genre, year, duration, copyright, ...props }: any) => {
   const { dispatch, state } = useSonority();
   const isCurrentTrack = state.currentTrack?.id === id;
 
@@ -56,6 +65,7 @@ export const Track: React.FC<TrackProps> & {
         album,
         image,
         src,
+        copyright,
         genre,
         year,
         duration,
@@ -75,6 +85,7 @@ export const Track: React.FC<TrackProps> & {
           writtenBy,
           album,
           image,
+          copyright,
           src,
           id,
           genre,
@@ -83,7 +94,7 @@ export const Track: React.FC<TrackProps> & {
           ...props,
         }}>
         <button
-          data-sonority-component="track"
+          data-sonority-component="Track"
           data-sonority-current={isCurrentTrack}
           className={className}
           onClick={handleTrackClick}>
@@ -99,6 +110,7 @@ export const Track: React.FC<TrackProps> & {
       value={{
         title,
         artist,
+        copyright,
         writtenBy,
         album,
         image,
@@ -110,7 +122,7 @@ export const Track: React.FC<TrackProps> & {
         ...props,
       }}>
       <button
-        data-sonority-component="track"
+        data-sonority-component="Track"
         data-sonority-current={isCurrentTrack}
         className={className}
         onClick={handleTrackClick}>
@@ -118,8 +130,21 @@ export const Track: React.FC<TrackProps> & {
         <div>
           <Track.Title />
           <Track.Artist />
-          {writtenBy && <Track.WrittenBy />}
-          {album && <Track.Album />}
+          {writtenBy && (
+            <p>
+              <Track.WrittenBy />
+            </p>
+          )}
+          {copyright && (
+            <p>
+              &copy; <Track.Copyright />
+            </p>
+          )}
+          {album && (
+            <p>
+              <Track.Album />
+            </p>
+          )}
         </div>
       </button>
     </TrackContext.Provider>
@@ -144,24 +169,32 @@ const formatDuration = (duration?: number) => {
 };
 
 // Title Subcomponent
-Track.Title = ({ className, children }) => {
+Track.Title = ({ className, children }:any) => {
   const track = useTrackContext();
 
   // If children are explicitly provided, use them
-  if (children) return <p className={className}>{children}</p>;
+  if (children)
+    return (
+      <span
+        data-sonority-component={`Track.Title`}
+        className={className}>
+        {children}
+      </span>
+    );
 
   // Default title rendering
   return (
-    <p
+    <span
+      data-sonority-component={`Track.Title`}
       className={className}
       style={{ textAlign: "start" }}>
       {track.title}
-    </p>
+    </span>
   );
 };
 
 // Artist Subcomponent
-Track.Artist = ({ className, children }) => {
+Track.Artist = ({ className, children }:any) => {
   const track = useTrackContext();
 
   // If children are explicitly provided, use them
@@ -172,68 +205,157 @@ Track.Artist = ({ className, children }) => {
 };
 
 // WrittenBy Subcomponent
-Track.WrittenBy = ({ className, children }) => {
+Track.WrittenBy = ({ className, children }:any) => {
   const track = useTrackContext();
 
   // If children are explicitly provided, use them
-  if (children) return <p className={className}>{children}</p>;
+  if (children)
+    return (
+      <span
+        data-sonority-component={`Track.WrittenBy`}
+        className={className}>
+        {children}
+      </span>
+    );
 
   // Default writtenBy rendering (only if writtenBy exists)
-  return track.writtenBy ? <p className={className}>Written by: {track.writtenBy}</p> : null;
+  return track.writtenBy ? (
+    <span
+      data-sonority-component={`Track.WrittenBy`}
+      className={className}>
+      {track.writtenBy}
+    </span>
+  ) : null;
 };
 
 // Album Subcomponent
-Track.Album = ({ className, children }) => {
+Track.Album = ({ className, children }:any) => {
   const track = useTrackContext();
 
   // If children are explicitly provided, use them
-  if (children) return <p className={className}>{children}</p>;
+  if (children)
+    return (
+      <span
+        data-sonority-component={`Track.Album`}
+        className={className}>
+        {children}
+      </span>
+    );
 
   // Default album rendering (only if album exists)
-  return track.album ? <p className={className}>Album: {track.album}</p> : null;
+  return track.album ? (
+    <span
+      data-sonority-component={`Track.Album`}
+      className={className}>
+      {track.album}
+    </span>
+  ) : null;
 };
 
 // Genre Subcomponent
-Track.Genre = ({ className, children }) => {
+Track.Genre = ({ className, children }:any) => {
   const track = useTrackContext();
 
   // If children are explicitly provided, use them
-  if (children) return <p className={className}>{children}</p>;
+  if (children)
+    return (
+      <span
+        data-sonority-component={`Track.Genre`}
+        className={className}>
+        {children}
+      </span>
+    );
 
   // Default genre rendering (only if genre exists)
-  return track.genre ? <p className={className}>Genre: {track.genre}</p> : null;
+  return track.genre ? (
+    <span
+      data-sonority-component={`Track.Genre`}
+      className={className}>
+      {track.genre}
+    </span>
+  ) : null;
 };
 
 // Year Subcomponent
-Track.Year = ({ className, children }) => {
+Track.Year = ({ className, children }:any) => {
   const track = useTrackContext();
 
   // If children are explicitly provided, use them
-  if (children) return <p className={className}>{children}</p>;
+  if (children)
+    return (
+      <span
+        data-sonority-component={`Track.Year`}
+        className={className}>
+        {children}
+      </span>
+    );
 
   // Default year rendering (only if year exists)
-  return track.year ? <p className={className}>Year: {track.year}</p> : null;
+  return track.year ? (
+    <span
+      data-sonority-component={`Track.Year`}
+      className={className}>
+      {track.year}
+    </span>
+  ) : null;
 };
 
 // Duration Subcomponent
-Track.Duration = ({ className, children }) => {
+Track.Duration = ({ className, children }:any) => {
   const track = useTrackContext();
 
   // If children are explicitly provided, use them
-  if (children) return <p className={className}>{children}</p>;
+  if (children)
+    return (
+      <span
+        data-sonority-component={`Track.Duration`}
+        className={className}>
+        {children}
+      </span>
+    );
 
   // Default duration rendering (only if duration exists)
-  return track.duration ? <p className={className}>Duration: {formatDuration(track.duration)}</p> : null;
+  return track.duration ? (
+    <span
+      data-sonority-component={`Track.Duration`}
+      className={className}>
+      {formatDuration(track.duration)}
+    </span>
+  ) : null;
+};
+
+Track.CurrentTime = ({ className, children }: any) => {
+  const track = useTrackContext();
+
+  // If children are explicitly provided, use them
+  if (children)
+    return (
+      <p
+        data-sonority-component={`Track.CurrentTime`}
+        className={className}>
+        {children}
+      </p>
+    );
+
+  // Default duration rendering (only if duration exists)
+  return track.currentTime ? (
+    <span
+      data-sonority-component={`Track.CurrentTime`}
+      className={className}>
+      {formatDuration(track.currentTime)}
+    </span>
+  ) : null;
 };
 
 // Cover Subcomponent
-Track.Cover = ({ className, imgClassName, altClassName }) => {
+Track.Cover = ({ className, imgClassName, altClassName }:any) => {
   const track = useTrackContext();
 
   // Only render if image exists
   return track.image ? (
     <figure className={className}>
       <img
+        data-sonority-component={`Track.Cover`}
         src={track.image.src}
         alt={track.image.alt || track.title}
         className={imgClassName}
@@ -257,18 +379,27 @@ Track.Cover = ({ className, imgClassName, altClassName }) => {
 };
 
 // Custom Property Subcomponent
-Track.CustomProperty = ({ name, className, children }) => {
+Track.CustomProperty = ({ name, className, children }:any) => {
   const track = useTrackContext();
 
   // Check if the custom property exists
   const propertyValue = track[name];
 
   // If children are explicitly provided, use them
-  if (children) return <p className={className}>{children}</p>;
+  if (children)
+    return (
+      <p
+        data-sonority-component={`Track.CustomProperty`}
+        className={className}>
+        {children}
+      </p>
+    );
 
   // Render custom property if it exists
   return propertyValue ? (
-    <p className={className}>
+    <p
+      className={className}
+      data-sonority-component={`Track.CustomProperty`}>
       {name}: {propertyValue.toString()}
     </p>
   ) : null;
