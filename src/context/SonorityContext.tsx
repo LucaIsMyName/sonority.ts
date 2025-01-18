@@ -328,12 +328,11 @@ export const SonorityProvider: React.FC<{ children: React.ReactNode; id: any }> 
         data-sonority-track-artist={state.currentTrack?.artist}
         data-sonority-track-copyright={state.currentTrack?.copyright}
         data-sonority-track-writtenBy={state.currentTrack?.writtenBy}
-        data-sonority-track-isDownloadActive-={state.currentTrack?.isDownloadActive}
-        data-sonority-track-album-={state.currentTrack?.album}
-        data-sonority-track-src-={state.currentTrack?.src}
-        data-sonority-track-duration-={state.currentTrack?.duration}
-        data-sonority-track-copyright-={state.currentTrack?.copyright}
-        data-sonority-track-dateAdded-={state.currentTrack?.dateAdded}>
+        data-sonority-track-isDownloadActive={state.currentTrack?.isDownloadActive}
+        data-sonority-track-album={state.currentTrack?.album}
+        data-sonority-track-src={state.currentTrack?.src}
+        data-sonority-track-duration={state.currentTrack?.duration}
+        data-sonority-track-dateAdded={state.currentTrack?.dateAdded}>
         {children}
       </div>
       {state.currentTrack && (

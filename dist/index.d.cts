@@ -1,4 +1,5 @@
 import React from 'react';
+import * as react_jsx_runtime from 'react/jsx-runtime';
 
 interface SonorityProps {
     variant?: "single" | "playlist" | "multiPlaylist";
@@ -160,7 +161,7 @@ interface TrackProps {
 interface PlaylistProps {
     id: string;
     name?: string;
-    order?: 'asc' | 'desc' | 'dateAdded' | 'artist' | 'copyright' | 'writtenBy';
+    order?: "asc" | "desc" | "dateAdded" | "artist" | "copyright" | "writtenBy";
     isDownloadActive?: boolean;
     isShuffleActive?: boolean;
     image?: ImageProps;
@@ -212,6 +213,29 @@ declare const Current: React.FC<{
         children?: React.ReactNode;
     }>;
 });
+
+interface VisualizerProps {
+    className?: string;
+    variant?: "waves" | "lines" | "bars" | "circle" | "equalizer" | "none" | undefined;
+    width?: number;
+    height?: number;
+    color?: string;
+}
+/**
+ *
+ * @param variant - The type of visualizer to render. Can be "waves", "lines", "bars", "circle", "equalizer", or "none".
+ * @param className - Additional CSS classes to apply to the canvas element.
+ * @param width - The width of the visualizer canvas.
+ * @param height - The height of the visualizer canvas.
+ * @param color - The color of the visualizer bars, lines, or waves.
+ * @returns A visualizer component that renders audio frequency data in a canvas element.
+ * @example
+ * ```tsx
+ * <Visualizer variant="bars" width={300} height={150} color="#4ade80" />
+ * ```
+ *
+ */
+declare const Visualizer: ({ variant, className, width, height, color }: VisualizerProps) => react_jsx_runtime.JSX.Element;
 
 interface SonorityState {
     currentTrack: TrackProps | null;
@@ -281,4 +305,47 @@ type SonorityAction = {
 };
 declare const useSonority: () => SonorityContextType;
 
-export { Control, Current, Playlist, Sonority, Track, Sonority as default, useSonority };
+declare const createPlaylist: (tracks: TrackProps[], name?: string) => PlaylistProps;
+declare const mergePlaylists: (playlists: PlaylistProps[]) => PlaylistProps;
+declare const filterPlaylist: (playlist: PlaylistProps, predicate: (track: TrackProps) => boolean) => PlaylistProps;
+declare const sortPlaylist: (playlist: PlaylistProps, order: "asc" | "desc" | "dateAdded" | "artist" | "copyright" | "writtenBy") => PlaylistProps;
+declare const shufflePlaylist: (playlist: PlaylistProps) => PlaylistProps;
+declare const toggleMute: (audio: HTMLAudioElement) => void;
+declare const toggleLoop: (audio: HTMLAudioElement) => void;
+declare const togglePlaybackRate: (audio: HTMLAudioElement) => void;
+declare const toggleControls: (audio: HTMLAudioElement) => void;
+declare const toggleAutoplay: (audio: HTMLAudioElement) => void;
+declare const stringUtils: {
+    toKebab: (str: string) => string;
+    toPascal: (str: string) => string;
+    toCamel: (str: string) => string;
+    toSnake: (str: string) => string;
+    toTitle: (str: string) => string;
+    toSentence: (str: string) => string;
+    toCapital: (str: string) => string;
+    toLower: (str: string) => string;
+    toUpper: (str: string) => string;
+    toTrim: (str: string) => string;
+    toReverse: (str: string) => string;
+    toReplace: (str: string, search: string, replace: string) => string;
+    toSlice: (str: string, start: number, end: number) => string;
+    toSubstring: (str: string, start: number, end: number) => string;
+    toCharAt: (str: string, index: number) => string;
+    toCharCodeAt: (str: string, index: number) => number;
+    toCodePointAt: (str: string, index: number) => number | undefined;
+    toConcat: (str: string, ...args: string[]) => string;
+    toIncludes: (str: string, search: string) => boolean;
+    toEndsWith: (str: string, search: string) => boolean;
+    toStartsWith: (str: string, search: string) => boolean;
+    toIndexOf: (str: string, search: string) => number;
+    toLastIndexOf: (str: string, search: string) => number;
+    toMatch: (str: string, search: string) => RegExpMatchArray | null;
+    toSearch: (str: string, search: string) => number;
+};
+declare const audioUtils: {
+    play: (audio: HTMLAudioElement) => Promise<void>;
+    pause: (audio: HTMLAudioElement) => void;
+    seek: (audio: HTMLAudioElement, time: number) => void;
+};
+
+export { Control, Current, Playlist, Sonority, Track, Visualizer, audioUtils, createPlaylist, Sonority as default, filterPlaylist, mergePlaylists, shufflePlaylist, sortPlaylist, stringUtils, toggleAutoplay, toggleControls, toggleLoop, toggleMute, togglePlaybackRate, useSonority };

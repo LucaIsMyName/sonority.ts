@@ -1,8 +1,6 @@
 # `<Sonority />`
 
-A Flexible, Headless React Audio Player Component
-
-Sonority provides a powerful, composable audio player for React applications with full TypeScript support.
+A Flexible, Headless React Audio Player.
 
 ## Features
 
@@ -32,15 +30,16 @@ yarn add react-sonority @radix-ui/react-select @radix-ui/react-slider @radix-ui/
 
 ```jsx
 import { Sonority, useSonority } from 'react-sonority';
+import { Play as PlayIcon, Pause as PauseIcon } from "lucide-react";
 
 function AudioPlayer() {
-  const state = useSonority();
+  const { state } = useSonority();
 
   return (
     <Sonority variant="playlist" className="p-4">
       {/* Play/Pause Control */}
       <Sonority.Control.Play>
-        {state.isPlaying ? 'Pause' : 'Play'}
+        {state.isPlaying ? <PauseIcon /> : <PlayIcon />}
       </Sonority.Control.Play>
 
       {/* Track Information */}
@@ -57,14 +56,19 @@ function AudioPlayer() {
       {/* Track Definition */}
       <Sonority.Playlist name="Rock'n'Roll">
         <Sonority.Track 
-          src="/ohio.mp3" 
+          src="./ohio.mp3" 
           title="Ohio"
           artist="The Black Keys" 
         />
         <Sonority.Track 
-          src="/out-on-the-weekend.mp3" 
+          src="./out-on-the-weekend.mp3" 
           title="Out on the Weekend"
           artist="Neil Young" 
+        />
+         <Sonority.Track 
+          src="./the-hardest-cut.mp3" 
+          title="The Hardest Cut"
+          artist="Spoon" 
         />
       </Sonority.Playlist>
     </Sonority>

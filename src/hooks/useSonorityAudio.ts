@@ -23,3 +23,5 @@ export const useSonorityAudio = (src: string) => {
 
   return { play, pause, seek };
 };
+
+

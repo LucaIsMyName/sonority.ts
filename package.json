@@ -1,7 +1,7 @@
 {
   "name": "react-sonority",
   "description": "A React component for building a fully customized audio player.",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

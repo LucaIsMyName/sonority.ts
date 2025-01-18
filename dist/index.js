@@ -158,7 +158,7 @@ var sonorityReducer = (state, action) => {
   }
 };
 var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
   const [state, dispatch] = useReducer(sonorityReducer, initialState);
   const audioRef = useRef(null);
   const playerIdRef = useRef(id);
@@ -307,12 +307,11 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
         "data-sonority-track-artist": (_f = state.currentTrack) == null ? void 0 : _f.artist,
         "data-sonority-track-copyright": (_g = state.currentTrack) == null ? void 0 : _g.copyright,
         "data-sonority-track-writtenBy": (_h = state.currentTrack) == null ? void 0 : _h.writtenBy,
-        "data-sonority-track-isDownloadActive-": (_i = state.currentTrack) == null ? void 0 : _i.isDownloadActive,
-        "data-sonority-track-album-": (_j = state.currentTrack) == null ? void 0 : _j.album,
-        "data-sonority-track-src-": (_k = state.currentTrack) == null ? void 0 : _k.src,
-        "data-sonority-track-duration-": (_l = state.currentTrack) == null ? void 0 : _l.duration,
-        "data-sonority-track-copyright-": (_m = state.currentTrack) == null ? void 0 : _m.copyright,
-        "data-sonority-track-dateAdded-": (_n = state.currentTrack) == null ? void 0 : _n.dateAdded,
+        "data-sonority-track-isDownloadActive": (_i = state.currentTrack) == null ? void 0 : _i.isDownloadActive,
+        "data-sonority-track-album": (_j = state.currentTrack) == null ? void 0 : _j.album,
+        "data-sonority-track-src": (_k = state.currentTrack) == null ? void 0 : _k.src,
+        "data-sonority-track-duration": (_l = state.currentTrack) == null ? void 0 : _l.duration,
+        "data-sonority-track-dateAdded": (_m = state.currentTrack) == null ? void 0 : _m.dateAdded,
         children
       }
     ),
@@ -327,7 +326,7 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
           width: 0,
           clipPath: "0px 0px 0px 0px"
         },
-        id: (_o = state.currentTrack) == null ? void 0 : _o.id,
+        id: (_n = state.currentTrack) == null ? void 0 : _n.id,
         ref: audioRef,
         src: state.currentTrack.src,
         "data-sonority-audio": state.currentTrack.src,
@@ -1378,9 +1377,99 @@ var Sonority = Object.assign(
   }
 );
 
+// src/utils.ts
+var createPlaylist = (tracks, name) => ({
+  id: crypto.randomUUID(),
+  name,
+  tracks
+});
+var mergePlaylists = (playlists) => ({
+  id: crypto.randomUUID(),
+  name: "Merged Playlist",
+  tracks: playlists.flatMap((playlist) => playlist.tracks || [])
+});
+var filterPlaylist = (playlist, predicate) => {
+  var _a;
+  return {
+    ...playlist,
+    tracks: ((_a = playlist.tracks) == null ? void 0 : _a.filter(predicate)) || []
+  };
+};
+var sortPlaylist = (playlist, order) => {
+  var _a;
+  return {
+    ...playlist,
+    tracks: ((_a = playlist.tracks) == null ? void 0 : _a.sort((a, b) => {
+      if (order === "asc") {
+        return a[order] > b[order] ? 1 : -1;
+      }
+      if (order === "desc") {
+        return a[order] < b[order] ? 1 : -1;
+      }
+      return 0;
+    })) || []
+  };
+};
+var shufflePlaylist = (playlist) => {
+  var _a;
+  return {
+    ...playlist,
+    tracks: ((_a = playlist.tracks) == null ? void 0 : _a.sort(() => Math.random() - 0.5)) || []
+  };
+};
+var toggleMute = (audio) => {
+  audio.muted = !audio.muted;
+};
+var toggleLoop = (audio) => {
+  audio.loop = !audio.loop;
+};
+var togglePlaybackRate = (audio) => {
+  audio.playbackRate = audio.playbackRate === 1 ? 2 : 1;
+};
+var toggleControls = (audio) => {
+  audio.controls = !audio.controls;
+};
+var toggleAutoplay = (audio) => {
+  audio.autoplay = !audio.autoplay;
+};
+var stringUtils = {
+  toKebab: (str) => str.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, "$1-$2").toLowerCase(),
+  toPascal: (str) => str.replace(/(\w)(\w*)/g, (_, g1, g2) => g1.toUpperCase() + g2.toLowerCase()),
+  toCamel: (str) => str.replace(/(\w)(\w*)/g, (_, g1, g2) => g1.toLowerCase() + g2.toLowerCase()),
+  toSnake: (str) => str.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, "$1_$2").toLowerCase(),
+  toTitle: (str) => str.replace(/(\w)(\w*)/g, (_, g1, g2) => g1.toUpperCase() + g2.toLowerCase()),
+  toSentence: (str) => str.replace(/(\w)(\w*)/g, (_, g1, g2) => g1.toUpperCase() + g2.toLowerCase()),
+  toCapital: (str) => str.charAt(0).toUpperCase() + str.slice(1),
+  toLower: (str) => str.toLowerCase(),
+  toUpper: (str) => str.toUpperCase(),
+  toTrim: (str) => str.trim(),
+  toReverse: (str) => str.split("").reverse().join(""),
+  toReplace: (str, search, replace) => str.replace(new RegExp(search, "g"), replace),
+  toSlice: (str, start, end) => str.slice(start, end),
+  toSubstring: (str, start, end) => str.substring(start, end),
+  toCharAt: (str, index) => str.charAt(index),
+  toCharCodeAt: (str, index) => str.charCodeAt(index),
+  toCodePointAt: (str, index) => str.codePointAt(index),
+  toConcat: (str, ...args) => str.concat(...args),
+  toIncludes: (str, search) => str.includes(search),
+  toEndsWith: (str, search) => str.endsWith(search),
+  toStartsWith: (str, search) => str.startsWith(search),
+  toIndexOf: (str, search) => str.indexOf(search),
+  toLastIndexOf: (str, search) => str.lastIndexOf(search),
+  toMatch: (str, search) => str.match(new RegExp(search, "g")),
+  toSearch: (str, search) => str.search(new RegExp(search, "g"))
+};
+var audioUtils = {
+  play: (audio) => audio.play(),
+  pause: (audio) => audio.pause(),
+  seek: (audio, time) => {
+    audio.currentTime = time;
+  }
+};
+
 // src/index.ts
 var src_default = Sonority;
 
-export { Control, Current, Playlist, Sonority, Track2 as Track, src_default as default, useSonority };
+export { Control, Current, Playlist, Sonority, Track2 as Track, Visualizer, audioUtils, createPlaylist, src_default as default, filterPlaylist, mergePlaylists, shufflePlaylist, sortPlaylist, stringUtils, toggleAutoplay, toggleControls, toggleLoop, toggleMute, togglePlaybackRate, useSonority };
 //# sourceMappingURL=out.js.map
 //# sourceMappingURL=index.js.map

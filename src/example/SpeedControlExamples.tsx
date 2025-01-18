@@ -125,7 +125,15 @@ const ButtonsSpeedPlayer = () => {
       </div>
 
       <Sonority.Playlist id="buttons-demo">
-        <Sonority.Track {...sampleTrack} />
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Sonority.Track
+            key={index}
+            className="block gap-4"
+            {...sampleTrack}
+            src={`./audio/song-${index + 1}.mp3`}
+            title={`Track ${index + 1}`}
+          />
+        ))}
       </Sonority.Playlist>
     </div>
   );
@@ -134,7 +142,7 @@ const ButtonsSpeedPlayer = () => {
 // Container for all speed control examples
 const SpeedControlExamples = () => {
   return (
-    <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-3">
+    <div className="min-w-[320px] space-y-4 gap-8 md:grid-cols-1 lg:grid-cols-3">
       <Sonority variant="single">
         <RangeSpeedPlayer />
       </Sonority>
@@ -143,7 +151,7 @@ const SpeedControlExamples = () => {
         <SelectSpeedPlayer />
       </Sonority>
 
-      <Sonority variant="single">
+      <Sonority variant="playlist">
         <ButtonsSpeedPlayer />
       </Sonority>
     </div>

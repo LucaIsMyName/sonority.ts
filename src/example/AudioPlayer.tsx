@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Play, Pause, SkipBack, SkipForward, Volume2, Volume1, VolumeX, List, Disc, Expand, Music2 } from "lucide-react";
-import { Sonority } from "../components/Sonority";
-import { useSonority } from "../context/SonorityContext";
-import { Visualizer } from "../components/Visualizer";
+import { Sonority, useSonority, Visualizer } from "../index";
 import SpeedControlExamples from "./SpeedControlExamples";
 
 function getRandomImageUrl() {
@@ -112,7 +110,7 @@ const SpotifyStylePlayer = () => {
   };
 
   return (
-    <div className="bg-neutral-900 text-white h-screen flex flex-col">
+    <div className="bg-neutral-900 rounded-lg border-2 border-black text-white h-screen flex flex-col">
       <div className="flex flex-grow">
         {/* Playlist (Full Width) */}
         <div className="w-full p-6 overflow-y-auto">
@@ -120,20 +118,21 @@ const SpotifyStylePlayer = () => {
           <Sonority.Playlist
             id="spotify-playlist"
             name="Daily Mix"
-            className="space-y-2">
+            className=" border-t-2 border-gray-700/50">
             {comprehensivePlaylist.map((track) => (
               <Sonority.Track
                 key={track.id}
                 {...track}
-                className="flex items-center p-2 hover:bg-neutral-800 rounded-lg group">
-                <div className="flex items-center w-full">
+                className={`flex text-left items-center border-b-2 p-2 ${state.currentTrack?.id === track.id ? "bg-black/70 border-gray-700/50" : "border-gray-700/50"} hover:bg-neutral-800 group w-full pr-6`}>
+                <div className="flex items-center gap-4 w-full">
+                  {state.currentTrack?.id === track.id ? <Pause className="size-4 opacity-100" /> : <Play className="size-4 opacity-50" />}
                   <Sonority.Track.Cover
-                    className="w-12 h-12 mr-4 rounded-md"
+                    className="w-12 h-12 mr-4 rounded-md overflow-hidden shadow-lg"
                     imgClassName="object-cover"
                   />
-                  <div className="flex-grow">
-                    <Sonority.Track.Title className="font-semibold group-hover:text-green-500" />
-                    <Sonority.Track.Artist className="text-sm text-neutral-400" />
+                  <div className="shrink-0 grow-0 flex-1 flex gap-4 items-center">
+                    <Sonority.Track.Title className="font-semibold md:w-64 group-hover:text-green-500 pr-4  border-r-2 border-gray-700/50 truncate" />
+                    <Sonority.Track.Artist className="text-sm text-neutral-400 md:w-48 pr-4  border-r-2 border-gray-700/50 truncate" />
                   </div>
                   <div className="text-neutral-400 text-sm">
                     <Sonority.Track.Album />
@@ -204,7 +203,7 @@ const SpotifyStylePlayer = () => {
 const SpotifyStylePlayerWrapper = () => (
   <Sonority
     variant="playlist"
-    className="col-span-3">
+    className="grid-cols-3">
     <SpotifyStylePlayer />
   </Sonority>
 );
@@ -359,18 +358,23 @@ const SimplePlaylistPlayerWrapper = () => (
 // Audio Player Examples Container
 const AudioPlayerExamples = () => {
   return (
-    <div className="min-h-screen bg-gray-50 p-8 space-y-8">
+    <div className="min-h-screen bg-gray-50 p-8 space-y-8 fixed inset-0 overflow-x-scroll">
       <h1 className="text-3xl font-bold text-center mb-8">Sonority Audio Player Examples</h1>
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        <SingleTrackPlayerWrapper />
-        <SimplePlaylistPlayerWrapper />
-        <SpotifyStylePlayerWrapper />
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Speed Control Variants</h2>
-        <SpeedControlExamples />
+      <div className="flex gap-8 overlow-x-scroll">
+        <div className={`shrink-0 w-full w-[560px]`}>
+          <SingleTrackPlayerWrapper />
+        </div>
+        <div className={`shrink-0 w-[320px]`}>
+          <SimplePlaylistPlayerWrapper />
+        </div>
+        <div className={`shrink-0 w-[1240px]`}>
+          <SpotifyStylePlayerWrapper />
+        </div>
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Speed Control Variants</h2>
+          <SpeedControlExamples />
+        </div>
       </div>
     </div>
   );
