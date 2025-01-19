@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from "react";
 import { useSonority } from "../context/SonorityContext";
+import { VolumeGraph, VolumeGraphProps } from "./VolumeGraph";
 
 export interface TrackProps {
   className?: string;
@@ -226,6 +227,19 @@ Track.WrittenBy = ({ className, children }:any) => {
       {track.writtenBy}
     </span>
   ) : null;
+};
+
+Track.VolumeGraph = ({ className, ...props }: VolumeGraphProps) => {
+  const track = useTrackContext();
+
+  return (
+    <div 
+      data-sonority-component="Track.VolumeGraph"
+      className={className}
+    >
+      <VolumeGraph {...props} trackId={track.id} />
+    </div>
+  );
 };
 
 // Album Subcomponent

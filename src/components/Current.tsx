@@ -2,6 +2,7 @@
 import React, { createContext, useContext } from "react";
 import { useSonority } from "../context/SonorityContext";
 import type { TrackProps } from "../types";
+import { VolumeGraph, VolumeGraphProps } from "./VolumeGraph";
 
 export interface CurrentContextType {
   currentTrack: TrackProps | null;
@@ -110,6 +111,21 @@ Current.Cover = createSubcomponent("image", (track) =>
     />
   ) : null
 );
+
+Current.VolumeGraph = ({ className, ...props }: VolumeGraphProps) => {
+  const { currentTrack } = useCurrentContext();
+
+  if (!currentTrack) return null;
+
+  return (
+    <div 
+      data-sonority-component="Current.VolumeGraph"
+      className={className}
+    >
+      <VolumeGraph {...props} trackId={currentTrack.id} />
+    </div>
+  );
+};
 
 Current.Track = createSubcomponent("title");
 Current.Artist = createSubcomponent("artist");

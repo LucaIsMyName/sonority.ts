@@ -1,2 +1,10 @@
-import AudioPlayerExamples from "./AudioPlayer";
-export const App = () => <AudioPlayerExamples />;
+import React from "react";
+import { Podcast } from "./audioplayers/Podcast";
+import { FullstackPlayer } from "./audioplayers/FullstackPlayer";
+
+export const App = () => (
+  <section>
+    <Podcast />
+    <FullstackPlayer />
+  </section>
+);

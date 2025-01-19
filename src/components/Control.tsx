@@ -193,7 +193,7 @@ Control.Seek = ({ className, children }: SeekProps) => {
         style={{
           position: "relative",
           flexGrow: 1,
-          height: "4px",
+          height: "2px",
           backgroundColor: "currentColor",
           borderRadius: "9999px",
         }}>
@@ -210,15 +210,16 @@ Control.Seek = ({ className, children }: SeekProps) => {
       </Slider.Track>
       <Slider.Thumb
         style={{
-          width: "16px",
-          height: "16px",
-          minHeight: "16px",
-          minWidth: "16px",
-          backgroundColor: "rgba(0,0,0,0.5)",
+          display: "block",
+          width: "12px",
+          height: "12px",
+          minHeight: "12px",
+          minWidth: "12px",
+          backgroundColor: "rgba(0,0,0,1)",
           border: "2px solid currentColor",
           outline: "none",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-          transition: "background-color 0.2s",
+          borderRadius: "9999px",
+          transition: "background-color 0.2s, left 0.1s",
         }}
         aria-label="Seek"
       />
@@ -316,7 +317,7 @@ Control.Speed = ({ className, options = {}, children }: ControlSpeedProps) => {
           style={{
             position: "relative",
             flexGrow: 1,
-            height: "4px",
+            height: "2px",
             backgroundColor: "currentColor",
             borderRadius: "9999px",
           }}>
@@ -331,15 +332,16 @@ Control.Speed = ({ className, options = {}, children }: ControlSpeedProps) => {
         </Slider.Track>
         <Slider.Thumb
           style={{
-            width: "16px",
-            height: "16px",
-            minHeight: "16px",
-            minWidth: "16px",
-            backgroundColor: "currentColor",
-            border: "2px solid white",
+            display: "block",
+            width: "12px",
+            height: "12px",
+            minHeight: "12px",
+            minWidth: "12px",
+            backgroundColor: "rgba(0,0,0,1)",
+            border: "2px solid currentColor",
             outline: "none",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-            transition: "background-color 0.2s",
+            borderRadius: "9999px",
+            transition: "background-color 0.2s, left 0.1s",
           }}
           aria-label="Speed"
         />
@@ -428,7 +430,7 @@ Control.Volume = ({ className }: VolumeProps) => {
         style={{
           position: "relative",
           flexGrow: 1,
-          height: "4px",
+          height: "2px",
           backgroundColor: "currentColor",
           borderRadius: "9999px",
         }}>
@@ -445,15 +447,16 @@ Control.Volume = ({ className }: VolumeProps) => {
       </Slider.Track>
       <Slider.Thumb
         style={{
-          width: "16px",
-          height: "16px",
-          minHeight: "16px",
-          minWidth: "16px",
-          backgroundColor: "currentColor",
-          border: "2px solid white",
+          display: "block",
+          width: "12px",
+          height: "12px",
+          minHeight: "12px",
+          minWidth: "12px",
+          backgroundColor: "rgba(0,0,0,1)",
+          border: "2px solid currentColor",
           outline: "none",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-          transition: "background-color 0.2s",
+          borderRadius: "9999px",
+          transition: "background-color 0.2s, left 0.1s",
         }}
         aria-label="Volume"
       />
