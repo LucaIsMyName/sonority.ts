@@ -1,4 +1,4 @@
-import React5, { createContext, useEffect, useReducer, useRef, useContext, useState } from 'react';
+import React6, { createContext, useEffect, useReducer, useRef, useContext, useMemo, useState } from 'react';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import * as Slider from '@radix-ui/react-slider';
 
@@ -342,6 +342,47 @@ var useSonority = () => {
   }
   return context;
 };
+var VolumeGraph = ({ width, height, stroke = "#707070", strokeWidth = 1, strokeLineCap = "round", gap = 22, className, trackId }) => {
+  const { state } = useSonority();
+  const defaultWidth = 404;
+  const defaultHeight = 211;
+  const volumeData = useMemo(() => {
+    var _a;
+    const counts = Math.floor((width || defaultWidth) / gap);
+    const isCurrent = trackId === ((_a = state.currentTrack) == null ? void 0 : _a.id);
+    return Array.from({ length: counts }, () => isCurrent ? Math.random() * 0.8 + 0.4 : Math.random() * 0.6 + 0.2);
+  }, []);
+  return /* @__PURE__ */ jsx(
+    "svg",
+    {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: width || "100%",
+      height: height || "100%",
+      viewBox: `0 0 ${defaultWidth} ${defaultHeight}`,
+      preserveAspectRatio: "xMidYMid meet",
+      className,
+      children: /* @__PURE__ */ jsx("g", { children: volumeData.map((volume, index) => {
+        const x = gap + index * gap;
+        const lineHeight = volume * defaultHeight * 0.6;
+        const y1 = (defaultHeight - lineHeight) / 2;
+        const y2 = y1 + lineHeight;
+        return /* @__PURE__ */ jsx(
+          "line",
+          {
+            x1: x,
+            y1,
+            x2: x,
+            y2,
+            stroke,
+            strokeWidth,
+            strokeLinecap: strokeLineCap
+          },
+          index
+        );
+      }) })
+    }
+  );
+};
 var CurrentContext = createContext(null);
 var CurrentContextProvider = ({ children, className }) => {
   const { state } = useSonority();
@@ -409,6 +450,19 @@ Current.Cover = createSubcomponent(
     }
   ) : null
 );
+Current.VolumeGraph = ({ className, ...props }) => {
+  const { currentTrack } = useCurrentContext();
+  if (!currentTrack)
+    return null;
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      "data-sonority-component": "Current.VolumeGraph",
+      className,
+      children: /* @__PURE__ */ jsx(VolumeGraph, { ...props, trackId: currentTrack.id })
+    }
+  );
+};
 Current.Track = createSubcomponent("title");
 Current.Artist = createSubcomponent("artist");
 Current.Album = createSubcomponent("album");
@@ -460,6 +514,7 @@ Control.Play = ({ className, children }) => {
   return /* @__PURE__ */ jsx(
     "button",
     {
+      "data-sonority-component": `Control.Play`,
       onClick: handlePlayPause,
       className,
       children: children || (state.isPlaying ? "Pause" : "Play")
@@ -471,6 +526,7 @@ Control.Previous = ({ className, children }) => {
   return /* @__PURE__ */ jsx(
     "button",
     {
+      "data-sonority-component": `Control.Previous`,
       onClick: () => dispatch({ type: "PREVIOUS_TRACK" }),
       className,
       disabled: state.queue.length <= 1,
@@ -483,6 +539,7 @@ Control.Next = ({ className, children }) => {
   return /* @__PURE__ */ jsx(
     "button",
     {
+      "data-sonority-component": `Control.Next`,
       onClick: () => dispatch({ type: "NEXT_TRACK" }),
       className,
       "data-sonority-next": state.queue.length <= 1,
@@ -496,6 +553,7 @@ Control.Seek = ({ className, children }) => {
   return /* @__PURE__ */ jsxs(
     Slider.Root,
     {
+      "data-sonority-component": `Control.Seek`,
       style: {
         width: "100%",
         height: "10px",
@@ -522,7 +580,7 @@ Control.Seek = ({ className, children }) => {
             style: {
               position: "relative",
               flexGrow: 1,
-              height: "4px",
+              height: "2px",
               backgroundColor: "currentColor",
               borderRadius: "9999px"
             },
@@ -545,15 +603,16 @@ Control.Seek = ({ className, children }) => {
           Slider.Thumb,
           {
             style: {
-              width: "16px",
-              height: "16px",
-              minHeight: "16px",
-              minWidth: "16px",
-              backgroundColor: "rgba(0,0,0,0.5)",
+              display: "block",
+              width: "12px",
+              height: "12px",
+              minHeight: "12px",
+              minWidth: "12px",
+              backgroundColor: "rgba(0,0,0,1)",
               border: "2px solid currentColor",
               outline: "none",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              transition: "background-color 0.2s"
+              borderRadius: "9999px",
+              transition: "background-color 0.2s, left 0.1s"
             },
             "aria-label": "Seek"
           }
@@ -575,6 +634,7 @@ Control.Mute = ({ className, children, initialMuted = false }) => {
   return /* @__PURE__ */ jsx(
     "button",
     {
+      "data-sonority-component": `Control.Mute`,
       onClick: handleMute,
       className,
       "aria-label": state.isMuted ? "Unmute" : "Mute",
@@ -587,7 +647,7 @@ Control.Speed = ({ className, options = {}, children }) => {
   var _a, _b, _c, _d;
   const { state, dispatch, audioControls } = useControlContext();
   const { min = 0, max = 2, default: defaultValue = 1, steps = 0.5, variant = "range" } = options;
-  const speeds = React5.useMemo(() => {
+  const speeds = React6.useMemo(() => {
     const count = (max - min) / steps + 1;
     return Array.from({ length: count }, (_, i) => min + i * steps);
   }, [min, max, steps]);
@@ -632,7 +692,7 @@ Control.Speed = ({ className, options = {}, children }) => {
               style: {
                 position: "relative",
                 flexGrow: 1,
-                height: "4px",
+                height: "2px",
                 backgroundColor: "currentColor",
                 borderRadius: "9999px"
               },
@@ -653,15 +713,16 @@ Control.Speed = ({ className, options = {}, children }) => {
             Slider.Thumb,
             {
               style: {
-                width: "16px",
-                height: "16px",
-                minHeight: "16px",
-                minWidth: "16px",
-                backgroundColor: "currentColor",
-                border: "2px solid white",
+                display: "block",
+                width: "12px",
+                height: "12px",
+                minHeight: "12px",
+                minWidth: "12px",
+                backgroundColor: "rgba(0,0,0,1)",
+                border: "2px solid currentColor",
                 outline: "none",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                transition: "background-color 0.2s"
+                borderRadius: "9999px",
+                transition: "background-color 0.2s, left 0.1s"
               },
               "aria-label": "Speed"
             }
@@ -752,7 +813,7 @@ Control.Volume = ({ className }) => {
             style: {
               position: "relative",
               flexGrow: 1,
-              height: "4px",
+              height: "2px",
               backgroundColor: "currentColor",
               borderRadius: "9999px"
             },
@@ -775,15 +836,16 @@ Control.Volume = ({ className }) => {
           Slider.Thumb,
           {
             style: {
-              width: "16px",
-              height: "16px",
-              minHeight: "16px",
-              minWidth: "16px",
-              backgroundColor: "currentColor",
-              border: "2px solid white",
+              display: "block",
+              width: "12px",
+              height: "12px",
+              minHeight: "12px",
+              minWidth: "12px",
+              backgroundColor: "rgba(0,0,0,1)",
+              border: "2px solid currentColor",
               outline: "none",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              transition: "background-color 0.2s"
+              borderRadius: "9999px",
+              transition: "background-color 0.2s, left 0.1s"
             },
             "aria-label": "Volume"
           }
@@ -851,7 +913,7 @@ var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onCl
     });
     onClick == null ? void 0 : onClick();
   };
-  if (React5.Children.count(children) > 0) {
+  if (React6.Children.count(children) > 0) {
     return /* @__PURE__ */ jsx(
       TrackContext.Provider,
       {
@@ -984,6 +1046,17 @@ Track2.WrittenBy = ({ className, children }) => {
       children: track.writtenBy
     }
   ) : null;
+};
+Track2.VolumeGraph = ({ className, ...props }) => {
+  const track = useTrackContext();
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      "data-sonority-component": "Track.VolumeGraph",
+      className,
+      children: /* @__PURE__ */ jsx(VolumeGraph, { ...props, trackId: track.id })
+    }
+  );
 };
 Track2.Album = ({ className, children }) => {
   const track = useTrackContext();
@@ -1142,7 +1215,7 @@ Track2.CustomProperty = ({ name, className, children }) => {
 var Playlist = ({ name, id, children, className }) => {
   const { dispatch, state } = useSonority();
   useEffect(() => {
-    const trackElements = React5.Children.toArray(children).filter((child) => React5.isValidElement(child) && child.type === Track2);
+    const trackElements = React6.Children.toArray(children).filter((child) => React6.isValidElement(child) && child.type === Track2);
     const extractedTracks = trackElements.map((track) => ({
       ...track.props,
       id: track.props.id || crypto.randomUUID()
@@ -1175,9 +1248,9 @@ var Playlist = ({ name, id, children, className }) => {
       "data-sonority-playlist-id": id,
       "data-sonority-playlist-name": name,
       className,
-      children: React5.Children.map(children, (child) => {
-        if (React5.isValidElement(child) && child.type === Track2) {
-          return React5.cloneElement(child, {
+      children: React6.Children.map(children, (child) => {
+        if (React6.isValidElement(child) && child.type === Track2) {
+          return React6.cloneElement(child, {
             ...child.props,
             onClick: () => handleTrackSelect(child.props)
           });

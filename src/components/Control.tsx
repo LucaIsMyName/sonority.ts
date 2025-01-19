@@ -113,6 +113,7 @@ Control.Play = ({ className, children }: PlayProps) => {
 
   return (
     <button
+      data-sonority-component={`Control.Play`}
       onClick={handlePlayPause}
       className={className}>
       {children || (state.isPlaying ? "Pause" : "Play")}
@@ -131,6 +132,7 @@ Control.Previous = ({ className, children }: PreviousProps) => {
 
   return (
     <button
+      data-sonority-component={`Control.Previous`}
       onClick={() => dispatch({ type: "PREVIOUS_TRACK" })}
       className={className}
       disabled={state.queue.length <= 1}>
@@ -150,6 +152,7 @@ Control.Next = ({ className, children }: NextProps) => {
 
   return (
     <button
+      data-sonority-component={`Control.Next`}
       onClick={() => dispatch({ type: "NEXT_TRACK" })}
       className={className}
       data-sonority-next={state.queue.length <= 1}
@@ -170,6 +173,7 @@ Control.Seek = ({ className, children }: SeekProps) => {
 
   return (
     <Slider.Root
+      data-sonority-component={`Control.Seek`}
       style={{
         width: "100%",
         height: "10px",
@@ -254,6 +258,7 @@ Control.Mute = ({ className, children, initialMuted = false }: MuteProps) => {
 
   return (
     <button
+      data-sonority-component={`Control.Mute`}
       onClick={handleMute}
       className={className}
       aria-label={state.isMuted ? "Unmute" : "Mute"}

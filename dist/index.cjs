@@ -2,7 +2,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var React5 = require('react');
+var React6 = require('react');
 var jsxRuntime = require('react/jsx-runtime');
 var Slider = require('@radix-ui/react-slider');
 
@@ -26,7 +26,7 @@ function _interopNamespace(e) {
   return Object.freeze(n);
 }
 
-var React5__default = /*#__PURE__*/_interopDefault(React5);
+var React6__default = /*#__PURE__*/_interopDefault(React6);
 var Slider__namespace = /*#__PURE__*/_interopNamespace(Slider);
 
 // src/context/SonorityContext.tsx
@@ -75,7 +75,7 @@ var initialState = {
   playbackRate: 1,
   queue: []
 };
-var SonorityContext = React5.createContext(null);
+var SonorityContext = React6.createContext(null);
 var sonorityReducer = (state, action) => {
   var _a;
   switch (action.type) {
@@ -186,10 +186,10 @@ var sonorityReducer = (state, action) => {
 };
 var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
-  const [state, dispatch] = React5.useReducer(sonorityReducer, initialState);
-  const audioRef = React5.useRef(null);
-  const playerIdRef = React5.useRef(id);
-  React5.useEffect(() => {
+  const [state, dispatch] = React6.useReducer(sonorityReducer, initialState);
+  const audioRef = React6.useRef(null);
+  const playerIdRef = React6.useRef(id);
+  React6.useEffect(() => {
     audioManager.registerPlayer(playerIdRef.current, () => {
       dispatch({ type: "PAUSE" });
     });
@@ -197,7 +197,7 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
       audioManager.unregisterPlayer(playerIdRef.current);
     };
   }, []);
-  React5.useEffect(() => {
+  React6.useEffect(() => {
     audioRef.current = new Audio();
     audioRef.current.preload = "auto";
     audioRef.current.crossOrigin = "anonymous";
@@ -209,7 +209,7 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
       }
     };
   }, []);
-  React5.useEffect(() => {
+  React6.useEffect(() => {
     if (!audioRef.current)
       return;
     if (state.isPlaying) {
@@ -222,7 +222,7 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
       audioRef.current.pause();
     }
   }, [state.isPlaying]);
-  React5.useEffect(() => {
+  React6.useEffect(() => {
     if (!audioRef.current || !state.currentTrack)
       return;
     const audio = audioRef.current;
@@ -279,7 +279,7 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
       audio.removeEventListener("error", handleError);
     };
   }, [(_a = state.currentTrack) == null ? void 0 : _a.id]);
-  React5.useEffect(() => {
+  React6.useEffect(() => {
     if (!audioRef.current || !state.currentTrack)
       return;
     if (state.isPlaying) {
@@ -295,7 +295,7 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
       audioRef.current.pause();
     }
   }, [state.isPlaying]);
-  React5.useEffect(() => {
+  React6.useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = state.volume;
     }
@@ -363,13 +363,54 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
   ] });
 };
 var useSonority = () => {
-  const context = React5.useContext(SonorityContext);
+  const context = React6.useContext(SonorityContext);
   if (!context) {
     throw new Error("useSonority must be used within a SonorityProvider");
   }
   return context;
 };
-var CurrentContext = React5.createContext(null);
+var VolumeGraph = ({ width, height, stroke = "#707070", strokeWidth = 1, strokeLineCap = "round", gap = 22, className, trackId }) => {
+  const { state } = useSonority();
+  const defaultWidth = 404;
+  const defaultHeight = 211;
+  const volumeData = React6.useMemo(() => {
+    var _a;
+    const counts = Math.floor((width || defaultWidth) / gap);
+    const isCurrent = trackId === ((_a = state.currentTrack) == null ? void 0 : _a.id);
+    return Array.from({ length: counts }, () => isCurrent ? Math.random() * 0.8 + 0.4 : Math.random() * 0.6 + 0.2);
+  }, []);
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "svg",
+    {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: width || "100%",
+      height: height || "100%",
+      viewBox: `0 0 ${defaultWidth} ${defaultHeight}`,
+      preserveAspectRatio: "xMidYMid meet",
+      className,
+      children: /* @__PURE__ */ jsxRuntime.jsx("g", { children: volumeData.map((volume, index) => {
+        const x = gap + index * gap;
+        const lineHeight = volume * defaultHeight * 0.6;
+        const y1 = (defaultHeight - lineHeight) / 2;
+        const y2 = y1 + lineHeight;
+        return /* @__PURE__ */ jsxRuntime.jsx(
+          "line",
+          {
+            x1: x,
+            y1,
+            x2: x,
+            y2,
+            stroke,
+            strokeWidth,
+            strokeLinecap: strokeLineCap
+          },
+          index
+        );
+      }) })
+    }
+  );
+};
+var CurrentContext = React6.createContext(null);
 var CurrentContextProvider = ({ children, className }) => {
   const { state } = useSonority();
   const contextValue = {
@@ -381,7 +422,7 @@ var Current = Object.assign(({ children, className }) => /* @__PURE__ */ jsxRunt
   Provider: CurrentContextProvider
 });
 var useCurrentContext = () => {
-  const context = React5.useContext(CurrentContext);
+  const context = React6.useContext(CurrentContext);
   if (!context) {
     const { state } = useSonority();
     return { currentTrack: state.currentTrack };
@@ -436,6 +477,19 @@ Current.Cover = createSubcomponent(
     }
   ) : null
 );
+Current.VolumeGraph = ({ className, ...props }) => {
+  const { currentTrack } = useCurrentContext();
+  if (!currentTrack)
+    return null;
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "div",
+    {
+      "data-sonority-component": "Current.VolumeGraph",
+      className,
+      children: /* @__PURE__ */ jsxRuntime.jsx(VolumeGraph, { ...props, trackId: currentTrack.id })
+    }
+  );
+};
 Current.Track = createSubcomponent("title");
 Current.Artist = createSubcomponent("artist");
 Current.Album = createSubcomponent("album");
@@ -445,7 +499,7 @@ Current.Genre = createSubcomponent("genre");
 Current.Year = createSubcomponent("year");
 Current.Duration = createSubcomponent("duration");
 Current.CurrentTime = createSubcomponent("currentTime");
-var ControlContext = React5.createContext(null);
+var ControlContext = React6.createContext(null);
 var ControlContextProvider = ({ children, className }) => {
   const { state, dispatch, audioControls } = useSonority();
   const contextValue = {
@@ -466,7 +520,7 @@ var Control = Object.assign(({ children, className }) => /* @__PURE__ */ jsxRunt
   Provider: ControlContextProvider
 });
 var useControlContext = () => {
-  const context = React5.useContext(ControlContext);
+  const context = React6.useContext(ControlContext);
   if (!context) {
     const { state, dispatch, audioControls } = useSonority();
     return { state, dispatch, audioControls };
@@ -487,6 +541,7 @@ Control.Play = ({ className, children }) => {
   return /* @__PURE__ */ jsxRuntime.jsx(
     "button",
     {
+      "data-sonority-component": `Control.Play`,
       onClick: handlePlayPause,
       className,
       children: children || (state.isPlaying ? "Pause" : "Play")
@@ -498,6 +553,7 @@ Control.Previous = ({ className, children }) => {
   return /* @__PURE__ */ jsxRuntime.jsx(
     "button",
     {
+      "data-sonority-component": `Control.Previous`,
       onClick: () => dispatch({ type: "PREVIOUS_TRACK" }),
       className,
       disabled: state.queue.length <= 1,
@@ -510,6 +566,7 @@ Control.Next = ({ className, children }) => {
   return /* @__PURE__ */ jsxRuntime.jsx(
     "button",
     {
+      "data-sonority-component": `Control.Next`,
       onClick: () => dispatch({ type: "NEXT_TRACK" }),
       className,
       "data-sonority-next": state.queue.length <= 1,
@@ -523,6 +580,7 @@ Control.Seek = ({ className, children }) => {
   return /* @__PURE__ */ jsxRuntime.jsxs(
     Slider__namespace.Root,
     {
+      "data-sonority-component": `Control.Seek`,
       style: {
         width: "100%",
         height: "10px",
@@ -549,7 +607,7 @@ Control.Seek = ({ className, children }) => {
             style: {
               position: "relative",
               flexGrow: 1,
-              height: "4px",
+              height: "2px",
               backgroundColor: "currentColor",
               borderRadius: "9999px"
             },
@@ -572,15 +630,16 @@ Control.Seek = ({ className, children }) => {
           Slider__namespace.Thumb,
           {
             style: {
-              width: "16px",
-              height: "16px",
-              minHeight: "16px",
-              minWidth: "16px",
-              backgroundColor: "rgba(0,0,0,0.5)",
+              display: "block",
+              width: "12px",
+              height: "12px",
+              minHeight: "12px",
+              minWidth: "12px",
+              backgroundColor: "rgba(0,0,0,1)",
               border: "2px solid currentColor",
               outline: "none",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              transition: "background-color 0.2s"
+              borderRadius: "9999px",
+              transition: "background-color 0.2s, left 0.1s"
             },
             "aria-label": "Seek"
           }
@@ -591,7 +650,7 @@ Control.Seek = ({ className, children }) => {
 };
 Control.Mute = ({ className, children, initialMuted = false }) => {
   const { state, dispatch } = useControlContext();
-  React5.useEffect(() => {
+  React6.useEffect(() => {
     if (initialMuted) {
       dispatch({ type: "SET_MUTED", payload: true });
     }
@@ -602,6 +661,7 @@ Control.Mute = ({ className, children, initialMuted = false }) => {
   return /* @__PURE__ */ jsxRuntime.jsx(
     "button",
     {
+      "data-sonority-component": `Control.Mute`,
       onClick: handleMute,
       className,
       "aria-label": state.isMuted ? "Unmute" : "Mute",
@@ -614,7 +674,7 @@ Control.Speed = ({ className, options = {}, children }) => {
   var _a, _b, _c, _d;
   const { state, dispatch, audioControls } = useControlContext();
   const { min = 0, max = 2, default: defaultValue = 1, steps = 0.5, variant = "range" } = options;
-  const speeds = React5__default.default.useMemo(() => {
+  const speeds = React6__default.default.useMemo(() => {
     const count = (max - min) / steps + 1;
     return Array.from({ length: count }, (_, i) => min + i * steps);
   }, [min, max, steps]);
@@ -659,7 +719,7 @@ Control.Speed = ({ className, options = {}, children }) => {
               style: {
                 position: "relative",
                 flexGrow: 1,
-                height: "4px",
+                height: "2px",
                 backgroundColor: "currentColor",
                 borderRadius: "9999px"
               },
@@ -680,15 +740,16 @@ Control.Speed = ({ className, options = {}, children }) => {
             Slider__namespace.Thumb,
             {
               style: {
-                width: "16px",
-                height: "16px",
-                minHeight: "16px",
-                minWidth: "16px",
-                backgroundColor: "currentColor",
-                border: "2px solid white",
+                display: "block",
+                width: "12px",
+                height: "12px",
+                minHeight: "12px",
+                minWidth: "12px",
+                backgroundColor: "rgba(0,0,0,1)",
+                border: "2px solid currentColor",
                 outline: "none",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                transition: "background-color 0.2s"
+                borderRadius: "9999px",
+                transition: "background-color 0.2s, left 0.1s"
               },
               "aria-label": "Speed"
             }
@@ -779,7 +840,7 @@ Control.Volume = ({ className }) => {
             style: {
               position: "relative",
               flexGrow: 1,
-              height: "4px",
+              height: "2px",
               backgroundColor: "currentColor",
               borderRadius: "9999px"
             },
@@ -802,15 +863,16 @@ Control.Volume = ({ className }) => {
           Slider__namespace.Thumb,
           {
             style: {
-              width: "16px",
-              height: "16px",
-              minHeight: "16px",
-              minWidth: "16px",
-              backgroundColor: "currentColor",
-              border: "2px solid white",
+              display: "block",
+              width: "12px",
+              height: "12px",
+              minHeight: "12px",
+              minWidth: "12px",
+              backgroundColor: "rgba(0,0,0,1)",
+              border: "2px solid currentColor",
               outline: "none",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              transition: "background-color 0.2s"
+              borderRadius: "9999px",
+              transition: "background-color 0.2s, left 0.1s"
             },
             "aria-label": "Volume"
           }
@@ -853,7 +915,7 @@ Control.Repeat = ({ className, children }) => {
     }
   );
 };
-var TrackContext = React5.createContext(null);
+var TrackContext = React6.createContext(null);
 var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onClick, children, coverWidth = 32, coverClassName = "", genre, year, duration, copyright, ...props }) => {
   var _a;
   const { dispatch, state } = useSonority();
@@ -878,7 +940,7 @@ var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onCl
     });
     onClick == null ? void 0 : onClick();
   };
-  if (React5__default.default.Children.count(children) > 0) {
+  if (React6__default.default.Children.count(children) > 0) {
     return /* @__PURE__ */ jsxRuntime.jsx(
       TrackContext.Provider,
       {
@@ -952,7 +1014,7 @@ var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onCl
   );
 };
 var useTrackContext = () => {
-  const context = React5.useContext(TrackContext);
+  const context = React6.useContext(TrackContext);
   if (!context) {
     throw new Error("Track components must be rendered inside a Track component");
   }
@@ -1011,6 +1073,17 @@ Track2.WrittenBy = ({ className, children }) => {
       children: track.writtenBy
     }
   ) : null;
+};
+Track2.VolumeGraph = ({ className, ...props }) => {
+  const track = useTrackContext();
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "div",
+    {
+      "data-sonority-component": "Track.VolumeGraph",
+      className,
+      children: /* @__PURE__ */ jsxRuntime.jsx(VolumeGraph, { ...props, trackId: track.id })
+    }
+  );
 };
 Track2.Album = ({ className, children }) => {
   const track = useTrackContext();
@@ -1168,8 +1241,8 @@ Track2.CustomProperty = ({ name, className, children }) => {
 };
 var Playlist = ({ name, id, children, className }) => {
   const { dispatch, state } = useSonority();
-  React5.useEffect(() => {
-    const trackElements = React5__default.default.Children.toArray(children).filter((child) => React5__default.default.isValidElement(child) && child.type === Track2);
+  React6.useEffect(() => {
+    const trackElements = React6__default.default.Children.toArray(children).filter((child) => React6__default.default.isValidElement(child) && child.type === Track2);
     const extractedTracks = trackElements.map((track) => ({
       ...track.props,
       id: track.props.id || crypto.randomUUID()
@@ -1202,9 +1275,9 @@ var Playlist = ({ name, id, children, className }) => {
       "data-sonority-playlist-id": id,
       "data-sonority-playlist-name": name,
       className,
-      children: React5__default.default.Children.map(children, (child) => {
-        if (React5__default.default.isValidElement(child) && child.type === Track2) {
-          return React5__default.default.cloneElement(child, {
+      children: React6__default.default.Children.map(children, (child) => {
+        if (React6__default.default.isValidElement(child) && child.type === Track2) {
+          return React6__default.default.cloneElement(child, {
             ...child.props,
             onClick: () => handleTrackSelect(child.props)
           });
@@ -1215,12 +1288,12 @@ var Playlist = ({ name, id, children, className }) => {
   );
 };
 var Visualizer = ({ variant = "bars", className = "", width = 300, height = 150, color = "#4ade80" }) => {
-  const canvasRef = React5.useRef(null);
-  const [audioContext, setAudioContext] = React5.useState(null);
-  const [analyser, setAnalyser] = React5.useState(null);
-  const [dataArray, setDataArray] = React5.useState(null);
-  const animationFrameRef = React5.useRef();
-  React5.useEffect(() => {
+  const canvasRef = React6.useRef(null);
+  const [audioContext, setAudioContext] = React6.useState(null);
+  const [analyser, setAnalyser] = React6.useState(null);
+  const [dataArray, setDataArray] = React6.useState(null);
+  const animationFrameRef = React6.useRef();
+  React6.useEffect(() => {
     const initAudio = async () => {
       var _a;
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1326,7 +1399,7 @@ var Visualizer = ({ variant = "bars", className = "", width = 300, height = 150,
       ctx.fillRect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
     }
   };
-  React5.useEffect(() => {
+  React6.useEffect(() => {
     if (!analyser || !canvasRef.current)
       return;
     const canvas = canvasRef.current;

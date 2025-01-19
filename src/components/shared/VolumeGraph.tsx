@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useSonority } from "../context/SonorityContext";
+import { useSonority } from "../../context/SonorityContext";
 
 export interface VolumeGraphProps {
   width?: number;

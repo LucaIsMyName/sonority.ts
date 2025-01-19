@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from "react";
 import { useSonority } from "../context/SonorityContext";
-import { VolumeGraph, VolumeGraphProps } from "./VolumeGraph";
+import { VolumeGraph, VolumeGraphProps } from "./shared/VolumeGraph";
 
 export interface TrackProps {
   className?: string;

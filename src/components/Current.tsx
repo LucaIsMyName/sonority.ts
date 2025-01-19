@@ -2,7 +2,7 @@
 import React, { createContext, useContext } from "react";
 import { useSonority } from "../context/SonorityContext";
 import type { TrackProps } from "../types";
-import { VolumeGraph, VolumeGraphProps } from "./VolumeGraph";
+import { VolumeGraph, VolumeGraphProps } from "./shared/VolumeGraph";
 
 export interface CurrentContextType {
   currentTrack: TrackProps | null;

@@ -5,6 +5,19 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-    'Helvetica Neue', Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+::-webkit-search-cancel-button {
+  position: absolute;
+  top: calc(50% - 6px);
+  right: 0;
+  width: 12px;
+  height: 12px;
+  content: "×";
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  -webkit-appearance: none;
 }
