@@ -1,5 +1,5 @@
 // src/components/Current.tsx
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, memo } from "react";
 import { useSonority } from "../context/SonorityContext";
 import type { TrackProps } from "../types";
 import { VolumeGraph, VolumeGraphProps } from "./shared/VolumeGraph";
@@ -118,11 +118,13 @@ Current.VolumeGraph = ({ className, ...props }: VolumeGraphProps) => {
   if (!currentTrack) return null;
 
   return (
-    <div 
+    <div
       data-sonority-component="Current.VolumeGraph"
-      className={className}
-    >
-      <VolumeGraph {...props} trackId={currentTrack.id} />
+      className={className}>
+      <VolumeGraph
+        {...props}
+        trackId={currentTrack.id}
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import React6, { createContext, useEffect, useReducer, useRef, useContext, useMemo, useState } from 'react';
-import { jsx, jsxs } from 'react/jsx-runtime';
+import React6, { createContext, useEffect, memo, useContext, useReducer, useRef, useMemo, useState } from 'react';
+import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import * as Slider from '@radix-ui/react-slider';
 
 // src/context/SonorityContext.tsx
@@ -49,6 +49,26 @@ var initialState = {
   queue: []
 };
 var SonorityContext = createContext(null);
+function useSonoritySelector(selector, equalityFn = Object.is) {
+  const context = useContext(SonorityContext);
+  if (!context)
+    throw new Error("useSonoritySelector must be used within SonorityProvider");
+  const { state } = context;
+  return useMemo(() => selector(state), [selector(state)]);
+}
+var useTrackInfo = () => {
+  return useSonoritySelector((state) => ({
+    currentTrack: state.currentTrack,
+    isPlaying: state.isPlaying
+  }));
+};
+var usePlaybackControls = () => {
+  const context = useContext(SonorityContext);
+  if (!context)
+    throw new Error("usePlaybackControls must be used within SonorityProvider");
+  const { dispatch, audioControls } = context;
+  return { dispatch, audioControls };
+};
 var sonorityReducer = (state, action) => {
   var _a;
   switch (action.type) {
@@ -158,7 +178,7 @@ var sonorityReducer = (state, action) => {
   }
 };
 var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
+  var _a;
   const [state, dispatch] = useReducer(sonorityReducer, initialState);
   const audioRef = useRef(null);
   const playerIdRef = useRef(id);
@@ -296,40 +316,12 @@ var SonorityProvider = ({ children, id = crypto.randomUUID() }) => {
     audioControls
   };
   return /* @__PURE__ */ jsxs(SonorityContext.Provider, { value, children: [
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        "data-sonority-state": true,
-        "data-sonority-playlist": (_b = state.currentPlaylist) == null ? void 0 : _b.name,
-        "data-sonority-playlist-isShuffle": (_c = state.currentPlaylist) == null ? void 0 : _c.isShuffleActive,
-        "data-sonority-playlist-id": (_d = state.currentPlaylist) == null ? void 0 : _d.id,
-        "data-sonority-track-title": (_e = state.currentTrack) == null ? void 0 : _e.title,
-        "data-sonority-track-artist": (_f = state.currentTrack) == null ? void 0 : _f.artist,
-        "data-sonority-track-copyright": (_g = state.currentTrack) == null ? void 0 : _g.copyright,
-        "data-sonority-track-writtenBy": (_h = state.currentTrack) == null ? void 0 : _h.writtenBy,
-        "data-sonority-track-isDownloadActive": (_i = state.currentTrack) == null ? void 0 : _i.isDownloadActive,
-        "data-sonority-track-album": (_j = state.currentTrack) == null ? void 0 : _j.album,
-        "data-sonority-track-src": (_k = state.currentTrack) == null ? void 0 : _k.src,
-        "data-sonority-track-duration": (_l = state.currentTrack) == null ? void 0 : _l.duration,
-        "data-sonority-track-dateAdded": (_m = state.currentTrack) == null ? void 0 : _m.dateAdded,
-        children
-      }
-    ),
+    children,
     state.currentTrack && /* @__PURE__ */ jsx(
       "audio",
       {
-        style: {
-          position: "absolute",
-          top: -9999,
-          left: -9999,
-          height: 0,
-          width: 0,
-          clipPath: "0px 0px 0px 0px"
-        },
-        id: (_n = state.currentTrack) == null ? void 0 : _n.id,
         ref: audioRef,
         src: state.currentTrack.src,
-        "data-sonority-audio": state.currentTrack.src,
         preload: "metadata"
       }
     )
@@ -459,7 +451,13 @@ Current.VolumeGraph = ({ className, ...props }) => {
     {
       "data-sonority-component": "Current.VolumeGraph",
       className,
-      children: /* @__PURE__ */ jsx(VolumeGraph, { ...props, trackId: currentTrack.id })
+      children: /* @__PURE__ */ jsx(
+        VolumeGraph,
+        {
+          ...props,
+          trackId: currentTrack.id
+        }
+      )
     }
   );
 };
@@ -889,103 +887,87 @@ Control.Repeat = ({ className, children }) => {
   );
 };
 var TrackContext = createContext(null);
-var Track2 = ({ className, title, artist, writtenBy, album, image, src, id, onClick, children, coverWidth = 32, coverClassName = "", genre, year, duration, copyright, ...props }) => {
-  var _a;
-  const { dispatch, state } = useSonority();
-  const isCurrentTrack = ((_a = state.currentTrack) == null ? void 0 : _a.id) === id;
-  const handleTrackClick = () => {
-    dispatch({
-      type: "SET_TRACK",
-      payload: {
-        id,
-        title,
-        artist,
-        writtenBy,
-        album,
-        image,
-        src,
-        copyright,
-        genre,
-        year,
-        duration,
-        ...props
-      }
-    });
-    onClick == null ? void 0 : onClick();
-  };
-  if (React6.Children.count(children) > 0) {
-    return /* @__PURE__ */ jsx(
-      TrackContext.Provider,
-      {
-        value: {
+var Track2 = memo(
+  ({
+    className,
+    title,
+    artist,
+    writtenBy,
+    album,
+    image,
+    src,
+    id,
+    onClick,
+    children,
+    coverWidth = 32,
+    coverClassName = "",
+    genre,
+    year,
+    duration,
+    copyright,
+    ...props
+  }) => {
+    const { currentTrack } = useTrackInfo();
+    const { dispatch } = usePlaybackControls();
+    const isCurrentTrack = (currentTrack == null ? void 0 : currentTrack.id) === id;
+    const handleTrackClick = () => {
+      dispatch({
+        type: "SET_TRACK",
+        payload: {
+          id,
           title,
           artist,
           writtenBy,
           album,
           image,
-          copyright,
           src,
-          id,
+          copyright,
           genre,
           year,
           duration,
           ...props
-        },
-        children: /* @__PURE__ */ jsx(
-          "button",
-          {
-            "data-sonority-component": "Track",
-            "data-sonority-current": isCurrentTrack,
-            className,
-            onClick: handleTrackClick,
-            children
-          }
-        )
-      }
-    );
-  }
-  return /* @__PURE__ */ jsx(
-    TrackContext.Provider,
-    {
-      value: {
-        title,
-        artist,
-        copyright,
-        writtenBy,
-        album,
-        image,
-        src,
-        id,
-        genre,
-        year,
-        duration,
-        ...props
-      },
-      children: /* @__PURE__ */ jsxs(
-        "button",
-        {
-          "data-sonority-component": "Track",
-          "data-sonority-current": isCurrentTrack,
-          className,
-          onClick: handleTrackClick,
-          children: [
-            /* @__PURE__ */ jsx(Track2.Cover, {}),
-            /* @__PURE__ */ jsxs("div", { children: [
-              /* @__PURE__ */ jsx(Track2.Title, {}),
-              /* @__PURE__ */ jsx(Track2.Artist, {}),
-              writtenBy && /* @__PURE__ */ jsx("p", { children: /* @__PURE__ */ jsx(Track2.WrittenBy, {}) }),
-              copyright && /* @__PURE__ */ jsxs("p", { children: [
-                "\xA9 ",
-                /* @__PURE__ */ jsx(Track2.Copyright, {})
-              ] }),
-              album && /* @__PURE__ */ jsx("p", { children: /* @__PURE__ */ jsx(Track2.Album, {}) })
-            ] })
-          ]
         }
-      )
-    }
-  );
-};
+      });
+      onClick == null ? void 0 : onClick();
+    };
+    const contextValue = {
+      title,
+      artist,
+      writtenBy,
+      album,
+      image,
+      copyright,
+      src,
+      id,
+      genre,
+      year,
+      duration,
+      ...props
+    };
+    return /* @__PURE__ */ jsx(TrackContext.Provider, { value: contextValue, children: /* @__PURE__ */ jsx(
+      "button",
+      {
+        "data-sonority-component": "Track",
+        "data-sonority-current": isCurrentTrack,
+        className,
+        onClick: handleTrackClick,
+        children: children || /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsx(Track2.Cover, {}),
+          /* @__PURE__ */ jsxs("div", { children: [
+            /* @__PURE__ */ jsx(Track2.Title, {}),
+            /* @__PURE__ */ jsx(Track2.Artist, {}),
+            writtenBy && /* @__PURE__ */ jsx(Track2.WrittenBy, {}),
+            copyright && /* @__PURE__ */ jsxs("p", { children: [
+              "\xA9 ",
+              /* @__PURE__ */ jsx(Track2.Copyright, {})
+            ] }),
+            album && /* @__PURE__ */ jsx(Track2.Album, {})
+          ] })
+        ] })
+      }
+    ) });
+  }
+);
 var useTrackContext = () => {
   const context = useContext(TrackContext);
   if (!context) {
@@ -1000,53 +982,35 @@ var formatDuration = (duration) => {
   const seconds = Math.floor(duration % 60);
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
-Track2.Title = ({ className, children }) => {
+Track2.Title = memo(({ className, children }) => {
   const track = useTrackContext();
-  if (children)
-    return /* @__PURE__ */ jsx(
-      "span",
-      {
-        "data-sonority-component": `Track.Title`,
-        className,
-        children
-      }
-    );
   return /* @__PURE__ */ jsx(
     "span",
     {
-      "data-sonority-component": `Track.Title`,
+      "data-sonority-component": "Track.Title",
       className,
       style: { textAlign: "start" },
-      children: track.title
+      children: children || track.title
     }
   );
-};
-Track2.Artist = ({ className, children }) => {
+});
+Track2.Artist = memo(({ className, children }) => {
   const track = useTrackContext();
   if (children)
     return /* @__PURE__ */ jsx("p", { className, children });
   return track.artist ? /* @__PURE__ */ jsx("p", { className, children: track.artist }) : null;
-};
-Track2.WrittenBy = ({ className, children }) => {
+});
+Track2.WrittenBy = memo(({ className, children }) => {
   const track = useTrackContext();
-  if (children)
-    return /* @__PURE__ */ jsx(
-      "span",
-      {
-        "data-sonority-component": `Track.WrittenBy`,
-        className,
-        children
-      }
-    );
-  return track.writtenBy ? /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsx(
     "span",
     {
-      "data-sonority-component": `Track.WrittenBy`,
+      "data-sonority-component": "Track.WrittenBy",
       className,
-      children: track.writtenBy
+      children: children || track.writtenBy
     }
-  ) : null;
-};
+  );
+});
 Track2.VolumeGraph = ({ className, ...props }) => {
   const track = useTrackContext();
   return /* @__PURE__ */ jsx(
@@ -1054,30 +1018,27 @@ Track2.VolumeGraph = ({ className, ...props }) => {
     {
       "data-sonority-component": "Track.VolumeGraph",
       className,
-      children: /* @__PURE__ */ jsx(VolumeGraph, { ...props, trackId: track.id })
+      children: /* @__PURE__ */ jsx(
+        VolumeGraph,
+        {
+          ...props,
+          trackId: track.id
+        }
+      )
     }
   );
 };
-Track2.Album = ({ className, children }) => {
+Track2.Album = memo(({ className, children }) => {
   const track = useTrackContext();
-  if (children)
-    return /* @__PURE__ */ jsx(
-      "span",
-      {
-        "data-sonority-component": `Track.Album`,
-        className,
-        children
-      }
-    );
   return track.album ? /* @__PURE__ */ jsx(
     "span",
     {
-      "data-sonority-component": `Track.Album`,
+      "data-sonority-component": "Track.Album",
       className,
-      children: track.album
+      children: children || track.album
     }
   ) : null;
-};
+});
 Track2.Genre = ({ className, children }) => {
   const track = useTrackContext();
   if (children)
@@ -1158,13 +1119,13 @@ Track2.CurrentTime = ({ className, children }) => {
     }
   ) : null;
 };
-Track2.Cover = ({ className, imgClassName, altClassName }) => {
+Track2.Cover = memo(({ className, imgClassName, altClassName }) => {
   const track = useTrackContext();
   return track.image ? /* @__PURE__ */ jsxs("figure", { className, children: [
     /* @__PURE__ */ jsx(
       "img",
       {
-        "data-sonority-component": `Track.Cover`,
+        "data-sonority-component": "Track.Cover",
         src: track.image.src,
         alt: track.image.alt || track.title,
         className: imgClassName,
@@ -1186,7 +1147,7 @@ Track2.Cover = ({ className, imgClassName, altClassName }) => {
       }
     )
   ] }) : null;
-};
+});
 Track2.CustomProperty = ({ name, className, children }) => {
   const track = useTrackContext();
   const propertyValue = track[name];

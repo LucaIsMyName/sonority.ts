@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useReducer, useRef, useEffect, useMemo } from "react";
+// src/context/SonorityContext.tsx
+import React, { createContext, useContext, useReducer, useRef, useEffect } from "react";
 import type { TrackProps, PlaylistProps } from "../types";
 import { audioManager } from "../utils/audioManager";
 
@@ -24,13 +25,13 @@ interface AudioControls {
   setPlaybackRate: (rate: number) => void;
 }
 
-interface SonorityContextValue {
+interface SonorityContextType {
   state: SonorityState;
   dispatch: React.Dispatch<SonorityAction>;
-  audioControls: AudioControls;
+  audioControls: AudioControls; // Add this line
 }
 
-const initialState = {
+const initialState: SonorityState = {
   currentTrack: null,
   currentPlaylist: null,
   isPlaying: false,
@@ -46,70 +47,9 @@ const initialState = {
   queue: [],
 };
 
-const SonorityContext = createContext<SonorityContextValue | null>(null);
+export const SonorityContext = createContext<SonorityContextType | null>(null);
 
-export function useSonoritySelector<Selected>(selector: (state: SonorityState) => Selected, equalityFn: (a: Selected, b: Selected) => boolean = Object.is): Selected {
-  const context = useContext(SonorityContext);
-  if (!context) throw new Error("useSonoritySelector must be used within SonorityProvider");
-
-  const { state } = context;
-  return useMemo(() => selector(state), [selector(state)]);
-}
-
-export const usePlaybackState = () => {
-  return useSonoritySelector(state => ({
-    currentTime: state.currentTime,
-    duration: state.duration
-  }));
-};
-
-export const useTrackInfo = () => {
-  return useSonoritySelector(state => ({
-    currentTrack: state.currentTrack,
-    isPlaying: state.isPlaying
-  }));
-};
-
-export const useVolumeState = () => {
-  return useSonoritySelector(state => ({
-    volume: state.volume,
-    isMuted: state.isMuted,
-    previousVolume: state.previousVolume
-  }));
-};
-
-export const usePlaylistState = () => {
-  return useSonoritySelector(state => ({
-    currentPlaylist: state.currentPlaylist,
-    queue: state.queue,
-    isShuffled: state.isShuffled
-  }));
-};
-
-export const usePlaybackControls = () => {
-  const context = useContext(SonorityContext);
-  if (!context) throw new Error("usePlaybackControls must be used within SonorityProvider");
-  const { dispatch, audioControls } = context;
-  return { dispatch, audioControls };
-};
-
-type SonorityAction = 
-  | { type: "SET_TRACK"; payload: TrackProps }
-  | { type: "SET_PLAYLIST"; payload: PlaylistProps }
-  | { type: "PLAY" }
-  | { type: "PAUSE" }
-  | { type: "SET_VOLUME"; payload: number }
-  | { type: "SET_TIME"; payload: number }
-  | { type: "SET_DURATION"; payload: number }
-  | { type: "TOGGLE_SHUFFLE" }
-  | { type: "TOGGLE_REPEAT" }
-  | { type: "TOGGLE_REPEAT_ONE" }
-  | { type: "NEXT_TRACK" }
-  | { type: "PREVIOUS_TRACK" }
-  | { type: "SET_QUEUE"; payload: TrackProps[] }
-  | { type: "TOGGLE_MUTE" }
-  | { type: "SET_MUTED"; payload: boolean }
-  | { type: "SET_PLAYBACK_RATE"; payload: number };
+type SonorityAction = { type: "SET_TRACK"; payload: TrackProps } | { type: "SET_PLAYLIST"; payload: PlaylistProps } | { type: "PLAY" } | { type: "PAUSE" } | { type: "SET_VOLUME"; payload: number } | { type: "SET_TIME"; payload: number } | { type: "SET_DURATION"; payload: number } | { type: "TOGGLE_SHUFFLE" } | { type: "TOGGLE_REPEAT" } | { type: "TOGGLE_REPEAT_ONE" } | { type: "NEXT_TRACK" } | { type: "PREVIOUS_TRACK" } | { type: "SET_QUEUE"; payload: TrackProps[] } | { type: "TOGGLE_MUTE" } | { type: "SET_MUTED"; payload: boolean } | { type: "SET_PLAYBACK_RATE"; payload: number };
 
 const sonorityReducer = (state: SonorityState, action: SonorityAction): SonorityState => {
   switch (action.type) {
@@ -371,7 +311,6 @@ export const SonorityProvider: React.FC<{ children: React.ReactNode; id: any }> 
     },
   };
 
-  
   const value = {
     state,
     dispatch,
@@ -380,11 +319,36 @@ export const SonorityProvider: React.FC<{ children: React.ReactNode; id: any }> 
 
   return (
     <SonorityContext.Provider value={value}>
-      {children}
+      <div
+        data-sonority-state
+        data-sonority-playlist={state.currentPlaylist?.name}
+        data-sonority-playlist-isshuffle={state.currentPlaylist?.isShuffleActive}
+        data-sonority-playlist-id={state.currentPlaylist?.id}
+        data-sonority-track-title={state.currentTrack?.title}
+        data-sonority-track-artist={state.currentTrack?.artist}
+        data-sonority-track-copyright={state.currentTrack?.copyright}
+        data-sonority-track-written-by={state.currentTrack?.writtenBy}
+        data-sonority-track-is-download-active={state.currentTrack?.isDownloadActive}
+        data-sonority-track-album={state.currentTrack?.album}
+        data-sonority-track-src={state.currentTrack?.src}
+        data-sonority-track-duration={state.currentTrack?.duration}
+        data-sonority-track-date-added={state.currentTrack?.dateAdded}>
+        {children}
+      </div>
       {state.currentTrack && (
         <audio
+          style={{
+            position: "absolute",
+            top: -9999,
+            left: -9999,
+            height: 0,
+            width: 0,
+            clipPath: "0px 0px 0px 0px",
+          }}
+          id={state.currentTrack?.id}
           ref={audioRef}
           src={state.currentTrack.src}
+          data-sonority-audio={state.currentTrack.src}
           preload="metadata"
         />
       )}
