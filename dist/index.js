@@ -1,4 +1,4 @@
-import React6, { createContext, useEffect, memo, useContext, useReducer, useRef, useMemo, useState } from 'react';
+import React6, { createContext, useEffect, memo, useContext, useMemo, useReducer, useRef, useState } from 'react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import * as Slider from '@radix-ui/react-slider';
 
@@ -56,10 +56,30 @@ function useSonoritySelector(selector, equalityFn = Object.is) {
   const { state } = context;
   return useMemo(() => selector(state), [selector(state)]);
 }
+var usePlaybackState = () => {
+  return useSonoritySelector((state) => ({
+    currentTime: state.currentTime,
+    duration: state.duration
+  }));
+};
 var useTrackInfo = () => {
   return useSonoritySelector((state) => ({
     currentTrack: state.currentTrack,
     isPlaying: state.isPlaying
+  }));
+};
+var useVolumeState = () => {
+  return useSonoritySelector((state) => ({
+    volume: state.volume,
+    isMuted: state.isMuted,
+    previousVolume: state.previousVolume
+  }));
+};
+var usePlaylistState = () => {
+  return useSonoritySelector((state) => ({
+    currentPlaylist: state.currentPlaylist,
+    queue: state.queue,
+    isShuffled: state.isShuffled
   }));
 };
 var usePlaybackControls = () => {
@@ -93,20 +113,20 @@ var sonorityReducer = (state, action) => {
         isRepeatingOne: false
         // Disable repeat one when toggling repeat
       };
-    case "TOGGLE_REPEAT_ONE":
-      return {
-        ...state,
-        isRepeatingOne: !state.isRepeatingOne,
-        isRepeating: false
-        // Disable repeat all when toggling repeat one
-      };
-    case "SET_PLAYLIST":
+    case "SET_PLAYLIST": {
+      const newTracks = action.payload.tracks || [];
+      const currentTrackInNewPlaylist = newTracks.find((track) => {
+        var _a2;
+        return track.id === ((_a2 = state.currentTrack) == null ? void 0 : _a2.id);
+      });
       return {
         ...state,
         currentPlaylist: action.payload,
-        queue: action.payload.tracks || []
-        // Update queue when playlist changes
+        queue: newTracks,
+        currentTrack: currentTrackInNewPlaylist || state.currentTrack,
+        isShuffled: false
       };
+    }
     case "PLAY":
       return { ...state, isPlaying: true };
     case "PAUSE":
@@ -117,9 +137,16 @@ var sonorityReducer = (state, action) => {
       return { ...state, currentTime: action.payload };
     case "SET_DURATION":
       return { ...state, duration: action.payload };
-    case "SET_QUEUE":
-      return { ...state, queue: action.payload };
+    case "SET_QUEUE": {
+      const newQueue = Array.isArray(action.payload) ? action.payload : [];
+      return {
+        ...state,
+        queue: newQueue
+      };
+    }
     case "NEXT_TRACK": {
+      if (!state.queue.length)
+        return state;
       const currentIndex = state.queue.findIndex((track) => {
         var _a2;
         return track.id === ((_a2 = state.currentTrack) == null ? void 0 : _a2.id);
@@ -127,13 +154,13 @@ var sonorityReducer = (state, action) => {
       const nextIndex = currentIndex + 1 >= state.queue.length ? 0 : currentIndex + 1;
       return {
         ...state,
-        currentTrack: state.queue[nextIndex] || state.currentTrack,
-        currentTime: 0,
-        isPlaying: state.isPlaying
-        // Maintain play state when changing tracks
+        currentTrack: state.queue[nextIndex],
+        currentTime: 0
       };
     }
     case "PREVIOUS_TRACK": {
+      if (!state.queue.length)
+        return state;
       const currentIndex = state.queue.findIndex((track) => {
         var _a2;
         return track.id === ((_a2 = state.currentTrack) == null ? void 0 : _a2.id);
@@ -141,10 +168,8 @@ var sonorityReducer = (state, action) => {
       const prevIndex = currentIndex <= 0 ? state.queue.length - 1 : currentIndex - 1;
       return {
         ...state,
-        currentTrack: state.queue[prevIndex] || state.currentTrack,
-        currentTime: 0,
-        isPlaying: state.isPlaying
-        // Maintain play state when changing tracks
+        currentTrack: state.queue[prevIndex],
+        currentTime: 0
       };
     }
     case "TOGGLE_MUTE":
@@ -1174,9 +1199,11 @@ Track2.CustomProperty = ({ name, className, children }) => {
   ) : null;
 };
 var Playlist = ({ name, id, children, className }) => {
-  const { dispatch, state } = useSonority();
+  const { dispatch } = useSonority();
   useEffect(() => {
-    const trackElements = React6.Children.toArray(children).filter((child) => React6.isValidElement(child) && child.type === Track2);
+    const trackElements = React6.Children.toArray(children).filter(
+      (child) => React6.isValidElement(child) && child.type === Track2
+    );
     const extractedTracks = trackElements.map((track) => ({
       ...track.props,
       id: track.props.id || crypto.randomUUID()
@@ -1189,13 +1216,7 @@ var Playlist = ({ name, id, children, className }) => {
         tracks: extractedTracks
       }
     });
-    if (!state.currentTrack && extractedTracks.length > 0) {
-      dispatch({
-        type: "SET_TRACK",
-        payload: extractedTracks[0]
-      });
-    }
-  }, [id, name]);
+  }, [id, name, children]);
   const handleTrackSelect = (trackProps) => {
     dispatch({
       type: "SET_TRACK",
@@ -1504,6 +1525,6 @@ var audioUtils = {
 // src/index.ts
 var src_default = Sonority;
 
-export { Control, Current, Playlist, Sonority, Track2 as Track, Visualizer, audioUtils, createPlaylist, src_default as default, filterPlaylist, mergePlaylists, shufflePlaylist, sortPlaylist, stringUtils, toggleAutoplay, toggleControls, toggleLoop, toggleMute, togglePlaybackRate, useSonority };
+export { Control, Current, Playlist, Sonority, Track2 as Track, Visualizer, audioUtils, createPlaylist, src_default as default, filterPlaylist, mergePlaylists, shufflePlaylist, sortPlaylist, stringUtils, toggleAutoplay, toggleControls, toggleLoop, toggleMute, togglePlaybackRate, usePlaybackControls, usePlaybackState, usePlaylistState, useSonority, useSonoritySelector, useTrackInfo, useVolumeState };
 //# sourceMappingURL=out.js.map
 //# sourceMappingURL=index.js.map

@@ -57,32 +57,32 @@ export function useSonoritySelector<Selected>(selector: (state: SonorityState) =
 }
 
 export const usePlaybackState = () => {
-  return useSonoritySelector(state => ({
+  return useSonoritySelector((state) => ({
     currentTime: state.currentTime,
-    duration: state.duration
+    duration: state.duration,
   }));
 };
 
 export const useTrackInfo = () => {
-  return useSonoritySelector(state => ({
+  return useSonoritySelector((state) => ({
     currentTrack: state.currentTrack,
-    isPlaying: state.isPlaying
+    isPlaying: state.isPlaying,
   }));
 };
 
 export const useVolumeState = () => {
-  return useSonoritySelector(state => ({
+  return useSonoritySelector((state) => ({
     volume: state.volume,
     isMuted: state.isMuted,
-    previousVolume: state.previousVolume
+    previousVolume: state.previousVolume,
   }));
 };
 
 export const usePlaylistState = () => {
-  return useSonoritySelector(state => ({
+  return useSonoritySelector((state) => ({
     currentPlaylist: state.currentPlaylist,
     queue: state.queue,
-    isShuffled: state.isShuffled
+    isShuffled: state.isShuffled,
   }));
 };
 
@@ -93,27 +93,12 @@ export const usePlaybackControls = () => {
   return { dispatch, audioControls };
 };
 
-type SonorityAction = 
-  | { type: "SET_TRACK"; payload: TrackProps }
-  | { type: "SET_PLAYLIST"; payload: PlaylistProps }
-  | { type: "PLAY" }
-  | { type: "PAUSE" }
-  | { type: "SET_VOLUME"; payload: number }
-  | { type: "SET_TIME"; payload: number }
-  | { type: "SET_DURATION"; payload: number }
-  | { type: "TOGGLE_SHUFFLE" }
-  | { type: "TOGGLE_REPEAT" }
-  | { type: "TOGGLE_REPEAT_ONE" }
-  | { type: "NEXT_TRACK" }
-  | { type: "PREVIOUS_TRACK" }
-  | { type: "SET_QUEUE"; payload: TrackProps[] }
-  | { type: "TOGGLE_MUTE" }
-  | { type: "SET_MUTED"; payload: boolean }
-  | { type: "SET_PLAYBACK_RATE"; payload: number };
+type SonorityAction = { type: "SET_TRACK"; payload: TrackProps } | { type: "SET_PLAYLIST"; payload: PlaylistProps } | { type: "PLAY" } | { type: "PAUSE" } | { type: "SET_VOLUME"; payload: number } | { type: "SET_TIME"; payload: number } | { type: "SET_DURATION"; payload: number } | { type: "TOGGLE_SHUFFLE" } | { type: "TOGGLE_REPEAT" } | { type: "TOGGLE_REPEAT_ONE" } | { type: "NEXT_TRACK" } | { type: "PREVIOUS_TRACK" } | { type: "SET_QUEUE"; payload: TrackProps[] } | { type: "TOGGLE_MUTE" } | { type: "SET_MUTED"; payload: boolean } | { type: "SET_PLAYBACK_RATE"; payload: number };
 
 const sonorityReducer = (state: SonorityState, action: SonorityAction): SonorityState => {
   switch (action.type) {
     case "SET_TRACK": {
+      // Keep track in the context of current playlist/queue
       return {
         ...state,
         currentTrack: action.payload,
@@ -136,18 +121,19 @@ const sonorityReducer = (state: SonorityState, action: SonorityAction): Sonority
         isRepeatingOne: false, // Disable repeat one when toggling repeat
       };
 
-    case "TOGGLE_REPEAT_ONE":
-      return {
-        ...state,
-        isRepeatingOne: !state.isRepeatingOne,
-        isRepeating: false, // Disable repeat all when toggling repeat one
-      };
-    case "SET_PLAYLIST":
+    case "SET_PLAYLIST": {
+      const newTracks = action.payload.tracks || [];
+      // Keep current track if it exists in new playlist
+      const currentTrackInNewPlaylist = newTracks.find((track) => track.id === state.currentTrack?.id);
+
       return {
         ...state,
         currentPlaylist: action.payload,
-        queue: action.payload.tracks || [], // Update queue when playlist changes
+        queue: newTracks,
+        currentTrack: currentTrackInNewPlaylist || state.currentTrack,
+        isShuffled: false,
       };
+    }
     case "PLAY":
       return { ...state, isPlaying: true };
     case "PAUSE":
@@ -158,26 +144,36 @@ const sonorityReducer = (state: SonorityState, action: SonorityAction): Sonority
       return { ...state, currentTime: action.payload };
     case "SET_DURATION":
       return { ...state, duration: action.payload };
-    case "SET_QUEUE":
-      return { ...state, queue: action.payload };
-    case "NEXT_TRACK": {
-      const currentIndex = state.queue.findIndex((track) => track.id === state.currentTrack?.id);
-      const nextIndex = currentIndex + 1 >= state.queue.length ? 0 : currentIndex + 1;
+    case "SET_QUEUE": {
+      const newQueue = Array.isArray(action.payload) ? action.payload : [];
       return {
         ...state,
-        currentTrack: state.queue[nextIndex] || state.currentTrack,
-        currentTime: 0,
-        isPlaying: state.isPlaying, // Maintain play state when changing tracks
+        queue: newQueue,
       };
     }
-    case "PREVIOUS_TRACK": {
+    case "NEXT_TRACK": {
+      if (!state.queue.length) return state;
+
       const currentIndex = state.queue.findIndex((track) => track.id === state.currentTrack?.id);
-      const prevIndex = currentIndex <= 0 ? state.queue.length - 1 : currentIndex - 1;
+      const nextIndex = currentIndex + 1 >= state.queue.length ? 0 : currentIndex + 1;
+
       return {
         ...state,
-        currentTrack: state.queue[prevIndex] || state.currentTrack,
+        currentTrack: state.queue[nextIndex],
         currentTime: 0,
-        isPlaying: state.isPlaying, // Maintain play state when changing tracks
+      };
+    }
+
+    case "PREVIOUS_TRACK": {
+      if (!state.queue.length) return state;
+
+      const currentIndex = state.queue.findIndex((track) => track.id === state.currentTrack?.id);
+      const prevIndex = currentIndex <= 0 ? state.queue.length - 1 : currentIndex - 1;
+
+      return {
+        ...state,
+        currentTrack: state.queue[prevIndex],
+        currentTime: 0,
       };
     }
     case "TOGGLE_MUTE":
@@ -371,7 +367,6 @@ export const SonorityProvider: React.FC<{ children: React.ReactNode; id: any }> 
     },
   };
 
-  
   const value = {
     state,
     dispatch,

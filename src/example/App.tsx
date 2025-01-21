@@ -13,7 +13,7 @@ if (typeof window !== 'undefined') {
 
 export const App = () => (
   <section>
-    <Podcast />
+    {/* <Podcast /> */}
     <FullstackPlayer />
   </section>
 );
