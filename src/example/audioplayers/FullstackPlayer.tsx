@@ -1,7 +1,7 @@
 import { Sonority } from "../../index";
 import { useTrackInfo, usePlaybackState, useVolumeState, usePlaylistState, usePlaybackControls } from "../../context/SonorityContext";
 import { Play, Pause, Download, Share, Ellipsis, SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX, ListMusic, Radio, Search, Music } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 // Playlists Mock Data
 const PLAYLIST_1 = [
@@ -115,6 +115,7 @@ const PlaybackControls = () => {
   const { isPlaying } = useTrackInfo();
   const { currentTime, duration } = usePlaybackState();
   const { isMuted } = useVolumeState();
+  const { queue } = usePlaylistState();  // Add this to check queue state
   const { dispatch } = usePlaybackControls();
 
   const formatTime = (time: number) => {
@@ -131,13 +132,25 @@ const PlaybackControls = () => {
             <Shuffle className="w-4 h-4" />
           </Sonority.Control.Shuffle>
 
-          <Sonority.Control.Previous className="text-white/40 hover:text-white">
+          <Sonority.Control.Previous 
+            className="text-white/40 hover:text-white disabled:opacity-50"
+            disabled={queue.length <= 1}
+            onClick={() => dispatch({ type: "PREVIOUS_TRACK" })}
+          >
             <SkipBack className="w-4 h-4" />
           </Sonority.Control.Previous>
 
-          <Sonority.Control.Play className="bg-white text-black rounded-full p-2 hover:scale-105 transition">{isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}</Sonority.Control.Play>
+          <Sonority.Control.Play 
+            className="bg-white text-black rounded-full p-2 hover:scale-105 transition"
+          >
+            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          </Sonority.Control.Play>
 
-          <Sonority.Control.Next className="text-white/40 hover:text-white">
+          <Sonority.Control.Next 
+            className="text-white/40 hover:text-white disabled:opacity-50"
+            disabled={queue.length <= 1}
+            onClick={() => dispatch({ type: "NEXT_TRACK" })}
+          >
             <SkipForward className="w-4 h-4" />
           </Sonority.Control.Next>
 
@@ -146,7 +159,9 @@ const PlaybackControls = () => {
           </Sonority.Control.Repeat>
 
           <div className="flex items-center gap-2 ml-4">
-            <Sonority.Control.Mute className="text-white/40 hover:text-white">{isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}</Sonority.Control.Mute>
+            <Sonority.Control.Mute className="text-white/40 hover:text-white">
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </Sonority.Control.Mute>
             <Sonority.Control.Volume className="w-24 min-w-16 text-white/40" />
           </div>
         </div>
@@ -162,12 +177,30 @@ const PlaybackControls = () => {
 };
 
 // Separate component for playlist track
-const PlaylistTrack = ({ track }) => {
+const PlaylistTrack = ({ track }: any) => {
   const { currentTrack } = useTrackInfo();
+  const { dispatch } = usePlaybackControls();
+  const { queue } = usePlaylistState();
+
+  const handleClick = () => {
+    // When clicking a track, ensure it's in the queue
+    if (!queue.some((t) => t.id === track.id)) {
+      dispatch({
+        type: "SET_QUEUE",
+        payload: [...queue, track],
+      });
+    }
+
+    dispatch({
+      type: "SET_TRACK",
+      payload: track,
+    });
+  };
 
   return (
     <Sonority.Track
       {...track}
+      onClick={handleClick}
       className={`flex w-full text-left items-center p-2 px-4 rounded-md ${currentTrack?.id === track.id ? "bg-[rgba(0,0,0,0.2)] backdrop-blur-lg border border-2 border-transparent backdrop-blur-lg shadow" : "hover:bg-[rgba(0,0,0,0.1)] border-2 border-[rgba(0,0,0,0)]"} transition-colors`}>
       <div className="flex items-center flex-1 min-w-0">
         <div className="flex-1 truncate">
@@ -219,13 +252,57 @@ const FullstackContent = () => {
   const handlePlaylistChange = (playlist: typeof PLAYLIST_1, id: PlaylistId) => {
     setCurrentPlaylist(playlist);
     setSelectedPlaylistId(id);
+    
+    // Update playlist
+    dispatch({
+      type: "SET_PLAYLIST",
+      payload: {
+        id,
+        name: `Playlist ${id}`,
+        tracks: playlist
+      }
+    });
+  
+    // Update queue
+    dispatch({
+      type: "SET_QUEUE",
+      payload: playlist
+    });
+  
+    // Set first track
     if (playlist.length > 0) {
       dispatch({
         type: "SET_TRACK",
-        payload: playlist[0],
+        payload: playlist[0]
       });
     }
   };
+
+  useEffect(() => {
+    // Set initial playlist and queue
+    dispatch({
+      type: "SET_PLAYLIST",
+      payload: {
+        id: "1",
+        name: "Playlist 1",
+        tracks: PLAYLIST_1
+      }
+    });
+  
+    // Set queue explicitly
+    dispatch({
+      type: "SET_QUEUE",
+      payload: PLAYLIST_1
+    });
+  
+    // Set initial track
+    if (PLAYLIST_1.length > 0) {
+      dispatch({
+        type: "SET_TRACK",
+        payload: PLAYLIST_1[0]
+      });
+    }
+  }, []); // Run once on mount
 
   return (
     <div className="flex h-[calc(100vh-theme(spacing.4)*2)] my-4 bg-[#1A1A1A] text-white rounded-xl overflow-hidden border-black/20 border-2 border-[#28282833] mx-4">
